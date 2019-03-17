@@ -1,11 +1,17 @@
 import math
+import string
+
 import postgresql
 import random
 from numpy import random as rand
+from DB import db_manager
+from Algorithm import Record
 
 TWO_PI_SQRT = 2.506
 SIGMA = 2
 MU = 1.5
+
+TXT = 1
 
 
 def gauss(x):
@@ -33,15 +39,7 @@ skills_distr = [gauss(x) for x in gauss_range]
 # normalizes it to form full group (hi prob_stat)
 skills_distr = list(map(lambda x: x + ((1 - sum(skills_distr)) / len(gauss_range)), skills_distr))
 
-# equal = same for every team member
-# uniform = different for team
-study_group_priority = ['equal', 100]
-project_priority = ['equal', 90]
-language_priority = ['equal', 75]
-role_priority = ['uniform', 70]
-experience_priority = ['uniform', 50]
-grades_priority = ['uniform', 40]
-psych_factor_priority = ['uniform', 10]
+db_mng = db_manager.DbManager()
 
 for x in range(200):
     # exp_with_offset[0] is skill offset. This parameter will scale skills for all 3 languages,
@@ -64,25 +62,20 @@ for x in range(200):
     # pad the remaining with null
     rand_roles = rand_roles + ([('NULL', 'NULL')] * 3)[:3 - len(rand_roles)]
 
-    # insert into main database
-    db.execute("""INSERT INTO records 
-                    (student_id, language1, language1_skill, 
-                    language2, language2_skill, 
-                    language3, language3_skill, 
-                    psych_factor, grades, experience, 
-                    study_group, project1, project2, project3) 
-                    VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})"""
-               .format(x, rand_lang[0][0], round(skills[0], 3),
-                       rand_lang[1][0], round(skills[1], 3),
-                       rand_lang[2][0], round(skills[2], 3),
-                       random.choice(psych_factors)[0],
-                       round(random.triangular(0, min(exp[0] + 2, 10)), 3),
-                       exp[1][0], random.choice(study_groups)[0],
-                       rand_projects[0][0], rand_projects[1][0], rand_projects[2][0]
-                       ),
-               )
+    rand_password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=30))
+    rand_mail = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
 
-    # insert into students roles table
-    db.execute("INSERT INTO students_roles values ({}, {}, {}, {})"
-               .format(x, rand_roles[0][0], rand_roles[1][0], rand_roles[2][0]))
-db.close()
+    # insert into main database
+    record = Record.Record(
+        {x[1]: x[0] for x in zip([rand_lang[0][TXT], rand_lang[1][TXT],
+                                  rand_lang[2][TXT], round(skills[0], 3),
+                                  round(skills[1], 3), round(skills[2], 3),
+                                  random.choice(psych_factors)[TXT],
+                                  round(random.triangular(0, min(exp[0] + 2, 10)), 3),
+                                  exp[1][TXT], random.choice(study_groups)[TXT],
+                                  rand_projects[0][TXT], rand_projects[1][TXT],
+                                  rand_projects[2][TXT], rand_roles[0][TXT],
+                                  rand_roles[1][TXT], rand_roles[2][TXT],
+                                  rand_mail, rand_password],
+                                 db_manager.SCHEMA)})
+    db_mng.insert_student(record)

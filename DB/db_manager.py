@@ -18,7 +18,7 @@ OTHER = []
 MAX_GRADE = 10
 
 SHORT_SCHEMA = LANGUAGES + SKILLS + PSYCH_FACTOR + GRADES + EXPERIENCE + STUDY_GROUP + PROJECTS + ROLES
-SCHEMA = SHORT_SCHEMA + NAMES + CREDENTIALS
+SCHEMA = SHORT_SCHEMA + CREDENTIALS + NAMES
 
 
 class DbManager:
@@ -66,14 +66,14 @@ class DbManager:
 
     def get_student(self, student_id):
         row = self.db.prepare("select * from records where student_id = $1")(student_id)[0]
-        name, surname, email, password = [SCHEMA.index(x) for x in NAMES + CREDENTIALS]
-        return Record.Record(row[0], name, surname, email, password,
+        email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
+        return Record.Record(row[0], row[name], row[surname], row[email], row[password],
                              {x[1]: x[0] for x in zip(row[1:len(row) - 2], SHORT_SCHEMA)})
 
     def get_students(self):
         records = list(self.db.query("select * from records"))
-        name, surname, email, password = [SCHEMA.index(x) for x in NAMES + CREDENTIALS]
-        return list([Record.Record(row[0], row[name], row[surname], email, password,
+        email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
+        return list([Record.Record(row[0], row[name], row[surname], row[email], row[password],
                                    {x[1]: x[0] for x in zip(row[1:], SCHEMA)}, ) for row in records])
 
     def get_student_record(self, student_id=None, email=None, password=None):
@@ -84,8 +84,8 @@ class DbManager:
         else:
             raise ValueError("incorrect arguments")
         row = self.id_to_val(row)
-        name, surname, email, password = [SCHEMA.index(x) for x in NAMES + CREDENTIALS]
-        return Record.Record(row[0], name, surname, email, password,
+        email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
+        return Record.Record(row[0], row[name], row[surname], row[email], row[password],
                              {x[1]: x[0] for x in zip(row[1:], SCHEMA)})
 
     def id_to_val(self, row):

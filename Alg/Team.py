@@ -1,5 +1,6 @@
 from Alg.Record import Record
-from DB.db_manager import MAX_GRADE, DbManager
+from DB.db_manager import MAX_GRADE, NAMES, CREDENTIALS, DbManager
+import json
 
 MEMBER_COUNT = 5
 db = DbManager()
@@ -7,8 +8,10 @@ db = DbManager()
 
 class Team:
     record_list = None
+    name = None
 
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.record_list = []
 
     def __add__(self, record):
@@ -50,13 +53,14 @@ class Team:
 
                 if arg_priority[x][1][3]:
                     if arg_priority[x][1][0]:
-                        arg_priority[x][0][f] = (MAX_GRADE - (max(temp) - min(temp)) ** arg_priority[x][1][2]) / (f + 1) ** 8
+                        arg_priority[x][0][f] = (MAX_GRADE - (max(temp) - min(temp)) ** arg_priority[x][1][2]) / (
+                                    f + 1) ** 8
                     else:
                         arg_priority[x][0][f] = ((max(temp) - min(temp)) ** arg_priority[x][1][2]) / (f + 1) ** 8
                 else:
                     if not arg_priority[x][1][0]:
                         arg_priority[x][0][f] = ((len(set(temp)) * 10 / len(temp)) ** arg_priority[x][1][2]) / (
-                                    f + 1) ** 8
+                                f + 1) ** 8
                     else:
                         arg_priority[x][0][f] = (((len(temp) - len(set(temp))) * 10 / len(temp))
                                                  ** arg_priority[x][1][2]) / (f + 1) ** 8
@@ -67,6 +71,8 @@ class Team:
     def normalizing_vector(self):
         return list(map(lambda x: MAX_GRADE / x, db.max_ids))
 
-    # data dump into moodle
-    def dump_data(self):
-        pass
+    def json_dump(self):
+        data = {self.name: [{x[1]: x[0] for x in zip([x.name, x.surname], NAMES)}
+                for x in self.record_list]}
+        return json.dumps(data)
+

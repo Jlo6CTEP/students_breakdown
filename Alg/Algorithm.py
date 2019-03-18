@@ -3,10 +3,9 @@ NORMALIZE_TO = 5 / 100
 from Alg.Team import Team
 from DB.db_manager import DbManager, MAX_GRADE
 
-db = DbManager()
-
 
 class Algorithm:
+    team_list = None
     # first element is mode of distribution
     # if set to true then all members must have almost same values
     # if false - values should be different
@@ -24,7 +23,7 @@ class Algorithm:
     project_priority = [True, 3, 90 * NORMALIZE_TO, False]
 
     def __init__(self):
-        pass
+        self.team_list = []
 
     def do_the_magic(self):
         pass

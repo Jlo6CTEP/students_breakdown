@@ -39,6 +39,10 @@ skills_distr = [gauss(x) for x in gauss_range]
 # normalizes it to form full group (hi prob_stat)
 skills_distr = list(map(lambda x: x + ((1 - sum(skills_distr)) / len(gauss_range)), skills_distr))
 
+mails = open("../Data/email.txt").read().split(',')
+names = open("../Data/first_name.txt").read().split(',')
+surnames = open("../Data/last_name.txt").read().split(',')
+
 db_mng = db_manager.DbManager()
 
 for x in range(200):
@@ -64,21 +68,20 @@ for x in range(200):
     rand_roles = rand_roles + ([('NULL', 'NULL')] * 3)[:3 - len(rand_roles)]
 
     rand_password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=30))
-    rand_mail = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
-    rand_name = ''.join(random.choices(string.ascii_uppercase + string.digits, k=7))
-    rand_surname = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    rand_mail = random.choice(mails)
+    rand_name = random.choice(names)
+    rand_surname = random.choice(surnames)
 
     # insert into main database
-    record = Record.Record(
-        record={x[1]: x[0] for x in zip([rand_lang[0][TXT], rand_lang[1][TXT],
-                                         rand_lang[2][TXT], round(skills[0], 3),
-                                         round(skills[1], 3), round(skills[2], 3),
-                                         random.choice(psych_factors)[TXT],
-                                         round(random.triangular(0, min(exp[0] + 2, 10)), 3),
-                                         exp[1][TXT], random.choice(study_groups)[TXT],
-                                         rand_projects[0][TXT], rand_projects[1][TXT],
-                                         rand_projects[2][TXT], rand_roles[0][TXT],
-                                         rand_roles[1][TXT], rand_roles[2][TXT],
-                                         rand_mail, rand_password],
-                                        db_manager.SCHEMA)}, name=rand_name, surname=rand_surname, sid=0)
+    record = Record.Record(0, rand_mail, rand_password, rand_name, rand_surname,
+                           record={x[1]: x[0] for x in zip([rand_lang[0][TXT], rand_lang[1][TXT],
+                                                            rand_lang[2][TXT], round(skills[0], 3),
+                                                            round(skills[1], 3), round(skills[2], 3),
+                                                            random.choice(psych_factors)[TXT],
+                                                            round(random.triangular(0, min(exp[0] + 2, 10)), 3),
+                                                            exp[1][TXT], random.choice(study_groups)[TXT],
+                                                            rand_projects[0][TXT], rand_projects[1][TXT],
+                                                            rand_projects[2][TXT], rand_roles[0][TXT],
+                                                            rand_roles[1][TXT], rand_roles[2][TXT]],
+                                                           db_manager.SCHEMA)})
     db_mng.insert_student(record)

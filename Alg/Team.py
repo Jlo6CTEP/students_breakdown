@@ -4,6 +4,7 @@ from DB.db_manager import MAX_GRADE, DbManager
 MEMBER_COUNT = 5
 db = DbManager()
 
+
 class Team:
     record_list = None
 
@@ -34,7 +35,7 @@ class Team:
         arg = [[] for x in range(len(priority_vector))]
         x = 0
         i = 0
-        while x < len(self.record_list[0])-2:
+        while x < len(self.record_list[0]) - 2:
             for f in range(priority_vector[i][1]):
                 arg[i].append([list(self.record_list[z].values())[x] for z in range(MEMBER_COUNT)])
                 x += 1
@@ -49,21 +50,22 @@ class Team:
 
                 if arg_priority[x][1][3]:
                     if arg_priority[x][1][0]:
-                        arg_priority[x][0][f] = (max(temp) - min(temp)) ** arg_priority[x][1][2]
+                        arg_priority[x][0][f] = (MAX_GRADE - (max(temp) - min(temp)) ** arg_priority[x][1][2]) / (f + 1) ** 8
                     else:
-                        arg_priority[x][0][f] =(max(temp) - min(temp)) ** arg_priority[x][1][2]
+                        arg_priority[x][0][f] = ((max(temp) - min(temp)) ** arg_priority[x][1][2]) / (f + 1) ** 8
                 else:
-                    if arg_priority[x][1][0]:
-                        arg_priority[x][0][f] = (len(set(temp)) * 10 / len(temp)) ** arg_priority[x][1][2]
+                    if not arg_priority[x][1][0]:
+                        arg_priority[x][0][f] = ((len(set(temp)) * 10 / len(temp)) ** arg_priority[x][1][2]) / (
+                                    f + 1) ** 8
                     else:
-                        arg_priority[x][0][f] = ((len(temp) - len(set(temp))) * 10 / len(temp)) ** arg_priority[x][1][2]
+                        arg_priority[x][0][f] = (((len(temp) - len(set(temp))) * 10 / len(temp))
+                                                 ** arg_priority[x][1][2]) / (f + 1) ** 8
 
         happiness = sum([max(x[0]) for x in arg_priority])
         return happiness
 
-
     def normalizing_vector(self):
-        return list(map(lambda x: MAX_GRADE / x, db.get_max_ids()))
+        return list(map(lambda x: MAX_GRADE / x, db.max_ids))
 
     # data dump into moodle
     def dump_data(self):

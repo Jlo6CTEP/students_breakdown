@@ -5,7 +5,7 @@ import postgresql
 import random
 from numpy import random as rand
 from DB import db_manager
-from Algorithm import Record
+from Alg import Record
 
 TWO_PI_SQRT = 2.506
 SIGMA = 2
@@ -52,7 +52,8 @@ for x in range(200):
     skills_scaled = list(map(lambda x: x * exp[0] / 10, skill_range))
 
     # takes 3 random values
-    skills = sorted([skills_scaled[x] for x in rand.choice(range(len(skills_scaled)), p=skills_distr, size=3)])
+    skills = sorted([skills_scaled[x] for x in rand.choice(range(len(skills_scaled)), p=skills_distr, size=3)],
+                    reverse=True)
 
     # 3 unique languages
     rand_lang = random.sample(languages, k=3)
@@ -64,18 +65,20 @@ for x in range(200):
 
     rand_password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=30))
     rand_mail = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
+    rand_name = ''.join(random.choices(string.ascii_uppercase + string.digits, k=7))
+    rand_surname = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
     # insert into main database
     record = Record.Record(
-        {x[1]: x[0] for x in zip([rand_lang[0][TXT], rand_lang[1][TXT],
-                                  rand_lang[2][TXT], round(skills[0], 3),
-                                  round(skills[1], 3), round(skills[2], 3),
-                                  random.choice(psych_factors)[TXT],
-                                  round(random.triangular(0, min(exp[0] + 2, 10)), 3),
-                                  exp[1][TXT], random.choice(study_groups)[TXT],
-                                  rand_projects[0][TXT], rand_projects[1][TXT],
-                                  rand_projects[2][TXT], rand_roles[0][TXT],
-                                  rand_roles[1][TXT], rand_roles[2][TXT],
-                                  rand_mail, rand_password],
-                                 db_manager.SCHEMA)})
+        record={x[1]: x[0] for x in zip([rand_lang[0][TXT], rand_lang[1][TXT],
+                                         rand_lang[2][TXT], round(skills[0], 3),
+                                         round(skills[1], 3), round(skills[2], 3),
+                                         random.choice(psych_factors)[TXT],
+                                         round(random.triangular(0, min(exp[0] + 2, 10)), 3),
+                                         exp[1][TXT], random.choice(study_groups)[TXT],
+                                         rand_projects[0][TXT], rand_projects[1][TXT],
+                                         rand_projects[2][TXT], rand_roles[0][TXT],
+                                         rand_roles[1][TXT], rand_roles[2][TXT],
+                                         rand_mail, rand_password],
+                                        db_manager.SCHEMA)}, name=rand_name, surname=rand_surname, sid=0)
     db_mng.insert_student(record)

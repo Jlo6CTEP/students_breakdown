@@ -1,7 +1,4 @@
-NORMALIZE_TO = 5 / 100
-
-from Alg.Team import Team
-from DB.db_manager import DbManager, MAX_GRADE
+NORMALIZE_TO = 10/100
 
 
 class Algorithm:
@@ -10,17 +7,18 @@ class Algorithm:
     # if set to true then all members must have almost same values
     # if false - values should be different
     # second parameter is number of such priorities, max function will be applied to them
-    # last parameter if absolute value or number of parameters matter
+    # fourth parameter if absolute value or number of parameters matter
     # true means value
+    # last parameter is should we take this into account
 
-    language_priority = [True, 3, 75 * NORMALIZE_TO, False]
-    skill_priority = [False, 3, 75 * NORMALIZE_TO, True]
-    psych_factor_priority = [False, 1, 10 * NORMALIZE_TO, False]
-    grades_priority = [False, 1, 40 * NORMALIZE_TO, True]
-    experience_priority = [False, 1, 50 * NORMALIZE_TO, False]
-    study_group_priority = [True, 1, 100 * NORMALIZE_TO, False]
-    role_priority = [False, 3, 70 * NORMALIZE_TO, False]
-    project_priority = [True, 3, 90 * NORMALIZE_TO, False]
+    language_priority = [True, 3, 75 * NORMALIZE_TO, False, True]
+    skill_priority = [False, 3, 75 * NORMALIZE_TO, True, False]
+    psych_factor_priority = [False, 1, 10 * NORMALIZE_TO, False, True]
+    grades_priority = [False, 1, 40 * NORMALIZE_TO, True, False]
+    experience_priority = [False, 1, 50 * NORMALIZE_TO, False, True]
+    study_group_priority = [True, 1, 100 * NORMALIZE_TO, False, False]
+    project_priority = [True, 3, 90 * NORMALIZE_TO, False, True]
+    role_priority = [False, 3, 70 * NORMALIZE_TO, False, True]
 
     def __init__(self):
         self.team_list = []
@@ -32,5 +30,4 @@ class Algorithm:
         return [self.language_priority] + [self.skill_priority] + \
                [self.psych_factor_priority] + [self.grades_priority] + \
                [self.experience_priority] + [self.study_group_priority] + \
-               [self.role_priority] + [self.project_priority]
-
+               [self.project_priority] + [self.role_priority]

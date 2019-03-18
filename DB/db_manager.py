@@ -4,6 +4,7 @@ from Alg import Record
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 
 # this names matches column names so be careful
+
 LANGUAGES = ['language1', 'language2', 'language3']  #
 SKILLS = ['language1_skill', 'language2_skill', 'language3_skill']
 PSYCH_FACTOR = ['psych_factor']  #
@@ -18,6 +19,7 @@ OTHER = []
 MAX_GRADE = 10
 
 SHORT_SCHEMA = LANGUAGES + SKILLS + PSYCH_FACTOR + GRADES + EXPERIENCE + STUDY_GROUP + PROJECTS + ROLES
+
 SCHEMA = SHORT_SCHEMA + CREDENTIALS + NAMES
 
 
@@ -36,8 +38,8 @@ class DbManager:
 
         self.max_ids = [[lg for x in range(len(LANGUAGES))] + [MAX_GRADE for x in range(len(LANGUAGES))] +
                         [pf for x in range(len(PSYCH_FACTOR))] + [MAX_GRADE for x in range(len(GRADES))] +
-                        [ex for x in range(len(EXPERIENCE))] + [pj for x in range(len(PROJECTS))] +
-                        [sg for x in range(len(STUDY_GROUP))] + [pr for x in range(len(ROLES))]][0]
+                        [ex for x in range(len(EXPERIENCE))] + [sg for x in range(len(STUDY_GROUP))] +
+                        [pj for x in range(len(PROJECTS))] + [pr for x in range(len(ROLES))]][0]
 
     # auchtung injection is possible (but who gives a fuck?)
     # yeah evil abuser can plunge his dirty dick right about here
@@ -58,7 +60,7 @@ class DbManager:
                                 (select role_id from project_roles where role = $14),
                                 (select role_id from project_roles where role = $15),
                                 (select role_id from project_roles where role = $16), $17, $18, $19, $20)"""
-                .format(*record.keys(), *NAMES, *CREDENTIALS))\
+                .format(*record.keys(), *NAMES, *CREDENTIALS)) \
             (*record.values(), record.email, record.password, record.name, record.surname)
 
     def delete_student(self, student_id):

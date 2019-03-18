@@ -1,4 +1,7 @@
 from DB import db_manager
+from DB.db_manager import MAX_GRADE, DbManager
+
+db = DbManager()
 
 
 class Record(dict):
@@ -23,6 +26,9 @@ class Record(dict):
         else:
             super().__init__({x: None for x in db_manager.SHORT_SCHEMA})
 
-    def normalize(self, vector):
-        [self.update({x[0]: self[x[0]] * x[1] if self[x[0]] is not None else 0}) for x in zip(self.keys(), vector)]
+    def normalize(self):
+        [self.update({x[0]: round(self[x[0]] * x[1]) if self[x[0]] is not None else 0}) for x in
+         zip(self.keys(), self.normalizing_vector())]
 
+    def normalizing_vector(self):
+        return list(map(lambda x: MAX_GRADE / x, db.max_ids))

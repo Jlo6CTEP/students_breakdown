@@ -4,7 +4,7 @@ import string
 import postgresql
 import random
 from numpy import random as rand
-from DB import db_manager
+import db_manager
 from Alg import Record
 
 TWO_PI_SQRT = 2.506
@@ -71,9 +71,9 @@ for x in range(200):
     rand_mail = random.choice(mails)
     rand_name = random.choice(names)
     rand_surname = random.choice(surnames)
-
+    next_id = db_mng.get_next_id()
     # insert into main database
-    record = Record.Record(0, rand_mail, rand_password, rand_name, rand_surname,
+    record = Record.Record(rand_name, rand_surname, rand_mail, rand_password, sid=next_id,
                            record={x[1]: x[0] for x in zip([rand_lang[0][TXT], rand_lang[1][TXT],
                                                             rand_lang[2][TXT], round(skills[0], 3),
                                                             round(skills[1], 3), round(skills[2], 3),

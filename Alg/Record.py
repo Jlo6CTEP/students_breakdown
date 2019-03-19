@@ -12,7 +12,7 @@ class Record(dict):
     password = None
 
     # record is dictionary of parameter : value pairs
-    def __init__(self, sid, name, surname, email, password, record=None):
+    def __init__(self, name, surname, email, password, record=None,  sid=None):
         self.student_id = sid
         self.name = name
         self.surname = surname

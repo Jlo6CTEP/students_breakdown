@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 from itertools import chain
 
-from Alg.Record import Record
+import Record
 from DB.db_manager import NAMES, MAX_GRADE
 
 MEMBER_COUNT = 5

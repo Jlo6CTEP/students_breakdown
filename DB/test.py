@@ -6,7 +6,7 @@ a = Algorithm()
 t = Team("Lol", a.priority_vector())
 db = DbManager()
 
-print(db.get_student(1600))
+print(db.get_student(email='kek', password='lol'))
 #r1 = db.get_student(student_id=1118)
 #r2 = db.get_student(student_id=1119)
 #r3 = db.get_student(student_id=1120)

@@ -83,18 +83,20 @@ class DbManager:
         return list([Record.Record(row[name], row[surname], row[email], row[password],
                                    {x[1]: x[0] for x in zip(row[1:], SCHEMA)}, sid=row[0]) for row in records])
 
-    def get_student_by_password(self, student_id=None, email=None, password=None):
-        hasher = hashlib.md5()
-        hasher.update(password.encode("ASCII"))
+    def get_student(self, student_id=None, email=None, password=None):
         if email is not None and password is not None:
-            row = list(self.db.prepare("select * from records where (email, password) = ($1,$2)")
-                       (email, hasher.hexdigest()))
+            hasher = hashlib.md5()
+            hasher.update(password.encode("ASCII"))
+            row = self.db.prepare("select * from records where (email, password) = ($1,$2)")\
+                (email, hasher.hexdigest())
         elif student_id is not None:
-            row = list(self.db.prepare("select * from records where student_id = $1")(student_id))[0]
+            row = self.db.prepare("select * from records where student_id = $1")(student_id)
         else:
             raise ValueError("incorrect arguments")
         if len(row) == 0:
             return None
+        else:
+            row = list(row[0])
         row = self.id_to_val(row)
         email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
         return Record.Record(row[name], row[surname], row[email], row[password],

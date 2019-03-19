@@ -77,29 +77,24 @@ class DbManager:
     def delete_student(self, student_id):
         self.db.prepare("delete from records where student_id = $1")(student_id)
 
-    def get_student(self, student_id):
-        row = self.db.prepare("select * from records where student_id = $1")(student_id)
-        if len(row) == 0:
-            return None
-        else:
-            row = row[0]
-        email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
-        return Record.Record(row[name], row[surname], row[email], row[password],
-                             {x[1]: x[0] for x in zip(row[1:len(row) - 2], SHORT_SCHEMA)}, sid=row[0])
-
     def get_students(self):
         records = list(self.db.query("select * from records"))
         email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
         return list([Record.Record(row[name], row[surname], row[email], row[password],
                                    {x[1]: x[0] for x in zip(row[1:], SCHEMA)}, sid=row[0]) for row in records])
 
-    def get_student_record(self, student_id=None, email=None, password=None):
+    def get_student_by_password(self, student_id=None, email=None, password=None):
+        hasher = hashlib.md5()
+        hasher.update(password.encode("ASCII"))
         if email is not None and password is not None:
-            row = list(self.db.prepare("select * from records where (email, password) = ($1,$2)")(email, password)[0])
+            row = list(self.db.prepare("select * from records where (email, password) = ($1,$2)")
+                       (email, hasher.hexdigest()))
         elif student_id is not None:
-            row = list(self.db.prepare("select * from records where student_id = $1")(student_id)[0])
+            row = list(self.db.prepare("select * from records where student_id = $1")(student_id))[0]
         else:
             raise ValueError("incorrect arguments")
+        if len(row) == 0:
+            return None
         row = self.id_to_val(row)
         email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
         return Record.Record(row[name], row[surname], row[email], row[password],

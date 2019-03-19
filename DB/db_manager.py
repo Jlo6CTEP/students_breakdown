@@ -78,7 +78,11 @@ class DbManager:
         self.db.prepare("delete from records where student_id = $1")(student_id)
 
     def get_student(self, student_id):
-        row = self.db.prepare("select * from records where student_id = $1")(student_id)[0]
+        row = self.db.prepare("select * from records where student_id = $1")(student_id)
+        if len(row) == 0:
+            return None
+        else:
+            row = row[0]
         email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
         return Record.Record(row[name], row[surname], row[email], row[password],
                              {x[1]: x[0] for x in zip(row[1:len(row) - 2], SHORT_SCHEMA)}, sid=row[0])

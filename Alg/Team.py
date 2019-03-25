@@ -2,33 +2,29 @@ import json
 from copy import deepcopy
 from itertools import chain
 
-from Alg import Record
-from DB.db_manager import NAMES, MAX_GRADE
+import Alg
+from DB.db_manager import MAX_GRADE
 
 MEMBER_COUNT = 5
 
 
 class Team:
-    name = None
     project = None
     record_list = None
     normalized_record_list = None
-    priority_vector = None
 
-    def __init__(self, name, vector):
-        self.name = name
+    def __init__(self):
         self.record_list = []
-        self.priority_vector = vector
 
     def __add__(self, record):
-        if isinstance(record, Record):
+        if isinstance(record, Alg.Record.Record):
             self.record_list.append(record)
         else:
             raise ValueError("incorrect addend type : {}".format(type(record)))
         return self
 
     def __sub__(self, record):
-        if isinstance(record, Record):
+        if isinstance(record, Alg.Record.Record):
             self.record_list.remove(record)
         else:
             raise ValueError("incorrect minuend type : {}".format(type(record)))
@@ -41,15 +37,15 @@ class Team:
         self.normalized_record_list = deepcopy(self.record_list)
         [x.normalize() for x in self.normalized_record_list]
 
-        arg = [[] for x in range(len(self.priority_vector))]
+        arg = [[] for x in range(len(Alg.Algorithm.priority_vector()))]
         x, i = 0, 0
         while x < len(self.normalized_record_list[0]) - 2:
-            for f in range(self.priority_vector[i][1]):
+            for f in range(Alg.Algorithm.priority_vector()[i][1]):
                 arg[i].append([list(self.normalized_record_list[z].values())[x] for z in range(MEMBER_COUNT)])
                 x += 1
             i += 1
 
-        arg_priority = list([x for x in zip(arg, self.priority_vector) if x[1][4]])
+        arg_priority = list([x for x in zip(arg, Alg.Algorithm.priority_vector()) if x[1][4]])
 
         happiness = 0
         for x in range(len(arg_priority)):
@@ -71,8 +67,3 @@ class Team:
                     # an attempt to normalize everything to 10
             happiness += temp
         return happiness
-
-    def json_dump(self):
-        data = {self.name: [{x[1]: x[0] for x in zip([x.name, x.surname], NAMES)}
-                            for x in self.record_list] + [self.happiness()]}
-        return json.dumps(data)

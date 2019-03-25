@@ -1,10 +1,10 @@
 import hashlib
 import postgresql
-from Alg import Record
 
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 
 # this names matches column names so be careful
+MAX_GRADE = 10
 S_ID = ['student_id']
 LANGUAGES = ['language1', 'language2', 'language3']  #
 SKILLS = ['language1_skill', 'language2_skill', 'language3_skill']
@@ -17,7 +17,6 @@ ROLES = ['role1', 'role2', 'role3']  #
 CREDENTIALS = ['email', 'password']
 NAMES = ['name', 'surname']
 OTHER = []
-MAX_GRADE = 10
 
 SHORT_SCHEMA = LANGUAGES + SKILLS + PSYCH_FACTOR + GRADES + EXPERIENCE + STUDY_GROUP + PROJECTS + ROLES
 
@@ -67,7 +66,7 @@ class DbManager:
         hasher.update(record.password.encode("ASCII"))
         self.db.prepare("""insert into records 
                           ({}, {}, {}, {}, {}) 
-                                values ($1, $2, $3, $4, $5)""".format(*S_ID, *CREDENTIALS, *NAMES))\
+                                values ($1, $2, $3, $4, $5)""".format(*S_ID, *CREDENTIALS, *NAMES)) \
             (record.student_id, record.email, hasher.hexdigest(), record.name, record.surname)
 
     def insert_student(self, record):
@@ -80,6 +79,7 @@ class DbManager:
     def get_students(self):
         records = list(self.db.query("select * from records"))
         email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
+        from Alg import Record
         return list([Record.Record(row[name], row[surname], row[email], row[password],
                                    {x[1]: x[0] for x in zip(row[1:], SCHEMA)}, sid=row[0]) for row in records])
 
@@ -87,7 +87,7 @@ class DbManager:
         if email is not None and password is not None:
             hasher = hashlib.md5()
             hasher.update(password.encode("ASCII"))
-            row = self.db.prepare("select * from records where (email, password) = ($1,$2)")\
+            row = self.db.prepare("select * from records where (email, password) = ($1,$2)") \
                 (email, hasher.hexdigest())
         elif student_id is not None:
             row = self.db.prepare("select * from records where student_id = $1")(student_id)
@@ -99,6 +99,7 @@ class DbManager:
             row = list(row[0])
         row = self.id_to_val(row)
         email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
+        from Alg import Record
         return Record.Record(row[name], row[surname], row[email], row[password],
                              {x[1]: x[0] for x in zip(row[1:], SCHEMA)}, sid=row[0])
 
@@ -122,4 +123,7 @@ class DbManager:
 
     def get_next_id(self):
         return self.db.query("select nextval(pg_get_serial_sequence('records', 'student_id')) as new_id")[0][0]
+
+
+db = DbManager()
 

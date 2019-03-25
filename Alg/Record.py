@@ -1,7 +1,8 @@
-from DB import db_manager
-from DB.db_manager import MAX_GRADE, DbManager
+from DB.db_manager import *
 
-db = DbManager()
+
+def normalizing_vector():
+    return list(map(lambda x: MAX_GRADE / x, db.max_ids))
 
 
 class Record(dict):
@@ -20,15 +21,12 @@ class Record(dict):
         self.password = password
         # will raise an exception in case of incorrect input schema
         if record is not None:
-            for x in db_manager.SHORT_SCHEMA:
+            for x in SHORT_SCHEMA:
                 f = record[x]
             super().__init__(record)
         else:
-            super().__init__({x: None for x in db_manager.SHORT_SCHEMA})
+            super().__init__({x: None for x in SHORT_SCHEMA})
 
     def normalize(self):
         [self.update({x[0]: round(self[x[0]] * x[1]) if self[x[0]] is not None else 0}) for x in
-         zip(self.keys(), self.normalizing_vector())]
-
-    def normalizing_vector(self):
-        return list(map(lambda x: MAX_GRADE / x, db.max_ids))
+         zip(self.keys(), normalizing_vector())]

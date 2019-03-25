@@ -3,8 +3,8 @@ import string
 
 import postgresql
 import random
+from DB.db_manager import db, SCHEMA
 from numpy import random as rand
-import db_manager
 from Alg import Record
 
 TWO_PI_SQRT = 2.506
@@ -18,14 +18,14 @@ def gauss(x):
     return 1 / SIGMA / TWO_PI_SQRT * math.e ** (-(x - MU) ** 2 / (2 * SIGMA ** 2))
 
 
-db = postgresql.open("pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt")
+db1 = postgresql.open("pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt")
 
-projects = db.query("select * from project")
-languages = db.query("select * from languages")
-roles = db.query("select * from project_roles")
-psych_factors = db.query("select * from psych_factor")
-experiences = db.query("select * from experience")
-study_groups = db.query("select * from study_group")
+projects = db1.query("select * from project")
+languages = db1.query("select * from languages")
+roles = db1.query("select * from project_roles")
+psych_factors = db1.query("select * from psych_factor")
+experiences = db1.query("select * from experience")
+study_groups = db1.query("select * from study_group")
 
 # experience + skill_offsets (to make PL skills correlating with experience)
 skill_offset = [4, 5, 6, 8, 9, 10]
@@ -42,8 +42,6 @@ skills_distr = list(map(lambda x: x + ((1 - sum(skills_distr)) / len(gauss_range
 mails = open("../Data/email.txt").read().split(',')
 names = open("../Data/first_name.txt").read().split(',')
 surnames = open("../Data/last_name.txt").read().split(',')
-
-db_mng = db_manager.DbManager()
 
 for x in range(200):
     # exp_with_offset[0] is skill offset. This parameter will scale skills for all 3 languages,
@@ -71,7 +69,7 @@ for x in range(200):
     rand_mail = random.choice(mails)
     rand_name = random.choice(names)
     rand_surname = random.choice(surnames)
-    next_id = db_mng.get_next_id()
+    next_id = db.get_next_id()
     # insert into main database
     record = Record.Record(rand_name, rand_surname, rand_mail, rand_password, sid=next_id,
                            record={x[1]: x[0] for x in zip([rand_lang[0][TXT], rand_lang[1][TXT],
@@ -83,5 +81,5 @@ for x in range(200):
                                                             rand_projects[0][TXT], rand_projects[1][TXT],
                                                             rand_projects[2][TXT], rand_roles[0][TXT],
                                                             rand_roles[1][TXT], rand_roles[2][TXT]],
-                                                           db_manager.SCHEMA)})
-    db_mng.insert_student(record)
+                                                           SCHEMA)})
+    db.insert_student(record)

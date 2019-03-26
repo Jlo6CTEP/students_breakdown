@@ -81,9 +81,9 @@ class DbManager:
         email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
         from Alg import Record
         return list([Record.Record(row[name], row[surname], row[email], row[password],
-                                   {x[1]: x[0] for x in zip(row[1:], SCHEMA)}, sid=row[0]) for row in records])
+                                   {x[1]: x[0] for x in zip(row[1:], SHORT_SCHEMA)}, sid=row[0]) for row in records])
 
-    def get_student(self, student_id=None, email=None, password=None):
+    def get_student(self, student_id=None, email=None, password=None, is_id=None):
         if email is not None and password is not None:
             hasher = hashlib.md5()
             hasher.update(password.encode("ASCII"))
@@ -97,11 +97,12 @@ class DbManager:
             return None
         else:
             row = list(row[0])
-        row = self.id_to_val(row)
+        if is_id:
+            row = self.id_to_val(row)
         email, password, name, surname = [SCHEMA.index(x) + 1 for x in CREDENTIALS + NAMES]
         from Alg import Record
         return Record.Record(row[name], row[surname], row[email], row[password],
-                             {x[1]: x[0] for x in zip(row[1:], SCHEMA)}, sid=row[0])
+                             {x[1]: x[0] for x in zip(row[1:], SHORT_SCHEMA)}, sid=row[0])
 
     def id_to_val(self, row):
         row[1] = self.db.query("select language from languages where language_id = {}".format(row[1]))[0][0]

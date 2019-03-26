@@ -30,3 +30,17 @@ class Record(dict):
     def normalize(self):
         [self.update({x[0]: round(self[x[0]] * x[1]) if self[x[0]] is not None else 0}) for x in
          zip(self.keys(), normalizing_vector())]
+
+    def __add__(self, record):
+        if isinstance(record, Record):
+            from Alg.Team import Team
+            t = Team() + self + record
+            return t
+        else:
+            raise ValueError("incorrect addend type : {}".format(type(record)))
+
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        else:
+            return self + other

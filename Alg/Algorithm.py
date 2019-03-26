@@ -79,4 +79,5 @@ class Algorithm:
                 heirs.append(x.self_fuck(crossover_rate))
             population[len(population)-BEST_SOLUTIONS-1:] = heirs
             population.sort(reverse=True)
+            generation += 1
         return population[0]

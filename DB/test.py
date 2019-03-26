@@ -1,7 +1,11 @@
+import time
+from copy import copy, deepcopy
+
 from Alg.Algorithm import Algorithm
 from Alg.Solution import Solution
 from Alg.Team import Team
 from DB.db_manager import db
+
 
 a = Algorithm()
 print(a.do_the_magic())
@@ -30,11 +34,11 @@ print(a.do_the_magic())
 # t3 = sum([r11, r12, r13, r14, r15])
 #
 # solution = Solution()
-#
 # solution.add_team(t1)
 # solution.add_team(t2)
 # solution.add_team(t3)
+#
 # print("kek")
-# f = solution.self_fuck(4)
+# s = solution.self_fuck(4)
 # print("lol")
 # print(t.happiness())

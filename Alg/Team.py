@@ -13,8 +13,14 @@ class Team(list):
     normalized_record_list = None
     __happiness_var = None
 
-    def __init__(self):
-        super().__init__(self)
+    def __init__(self, f = None):
+        if f is not None:
+            super().__init__(f)
+        else:
+            super().__init__()
+        self.project = None
+        self.normalized_record_list = None
+        self.__happiness_var = None
 
     def __add__(self, record):
         if isinstance(record, Alg.Record.Record):
@@ -31,9 +37,6 @@ class Team(list):
             raise ValueError("incorrect minuend type : {}".format(type(record)))
         self.__happiness_var = None
         return self
-
-    #def __str__(self):
-    #    return '\n '.join([str(x) for x in self.record_list])
 
     def __str__(self):
         return ', '.join([str(x.student_id) for x in self])

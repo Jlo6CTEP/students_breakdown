@@ -17,6 +17,10 @@
         <p>
             <router-link to="/login">Logout</router-link>
         </p>
+
+        <p>
+            <router-link to="/create_survey">Create new survey</router-link>
+        </p>
     </div>
 </template>
 

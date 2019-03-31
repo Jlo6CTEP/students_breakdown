@@ -4,6 +4,7 @@ from DB.db_manager import DbManager
 
 a = Algorithm()
 t = Team("Lol", a.priority_vector())
+print(t)
 db = DbManager()
 
 print(db.get_student(email='kek', password='lol'))

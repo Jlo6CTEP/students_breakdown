@@ -1,14 +1,17 @@
 <template>
-    <form>
+    <form v-bind:style="styleSurv">
         <div class="form-group" >
             <label for="courseName">Course name: </label>
             <input type="text" class="form-control" id="courseName" placeholder="ex. Software project">
         </div>
-        <div class="form-group">
+
+        <div class="form-group" id="numberOfTeamMembers" >
+           <label for="minNumberOfTeamMembers"> Minimum number of members in a team: </label>
+            <input type="number" class="form-control" id="minNumberOfTeamMembers" placeholder="ex. 2" v-model="minNumb" style = "width: 75px">
             <label for="maxNumberOfTeamMembers"> Maximum number of members in a team: </label>
-            <input type="number" class="form-control" id="maxNumberOfTeamMembers" placeholder="ex. 5">
+            <input type="number" class="form-control" id="maxNumberOfTeamMembers" placeholder="ex. 5" v-model="maxNumb" style = "width: 75px">
         </div>
-        <div id="studyGroups" class="form-group">
+      <!--  <div id="studyGroups" class="form-group">
             <label for="studyGroups">Involve to course project the chosen study groups:</label>
             <br>
             <input type="checkbox" id="BS17-01" value="BS17-01" v-model="checkedGroups">
@@ -29,7 +32,7 @@
             <label for="BS17-01">BS17-08</label>
             <br>
             <span>Chosen groups: {{ checkedGroups }}</span>
-        </div>
+        </div>-->
         <div  class="form-group" id="amongGroup">
             <label for="amongGroup"> Form group from students among: </label>
             <br>
@@ -42,18 +45,38 @@
         <input type="radio" id="three_among" value="One course" v-model="picked">
         <label for="three_among">One course</label>
         <br>
-       <!-- <span>Выбрано: {{ amongGroup }}</span>-->
+        </div>
+
+
+        <div class="form-topics" id="projectTopics">
+            <label for="projectTopics"> List project topics below </label>
+            <br>
+            <textarea v-model="projectTopic" placeholder="ex., Topic1, Topic2,..." style = "width: 200px"></textarea>
+        </div>
+        <div>
+            <button v-on:click="createSurvey">Create survey</button>
+
         </div>
     </form>
 </template>
 
 <script>
     export default {
-        name: "SurveyCreationPage",
-        el: '#studyGroups',
-        data:{
-            checkedGroups: '',
-            picked: '',
+        data() {
+            /*
+            .form-topics {
+                    width: 300px;
+                    height: 100px;
+
+
+                }
+
+                color:red
+            }*/
+            return {
+                cour: 1,
+                courseName: 'SWP'
+            };
         }
     }
 

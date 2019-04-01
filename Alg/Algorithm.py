@@ -2,7 +2,6 @@ import random
 
 from Alg.Solution import Solution
 from DB.db_manager import db
-from Alg.Team import MEMBER_COUNT
 from math import ceil
 
 NORMALIZE_TO = 10 / 100
@@ -10,6 +9,14 @@ POPULATION_SIZE = 20
 
 BEST_SOLUTIONS = 8
 BASE_CROSSOVER_RATE = 8
+
+# first element is mode of distribution
+# if set to true then all members must have almost same values
+# if false - values should be different
+# second parameter is number of such priorities, max function will be applied to them
+# fourth parameter if absolute value or number of parameters matter
+# true means value
+# last parameter is should we take this into account
 
 language_priority = [True, 3, 75 * NORMALIZE_TO, False, True]
 skill_priority = [False, 3, 75 * NORMALIZE_TO, True, False]
@@ -21,7 +28,7 @@ project_priority = [True, 3, 90 * NORMALIZE_TO, False, True]
 role_priority = [False, 3, 70 * NORMALIZE_TO, False, True]
 
 
-def priority_vector():
+def priority_vector(): 
     return [language_priority] + [skill_priority] + \
            [psych_factor_priority] + [grades_priority] + \
            [experience_priority] + [study_group_priority] + \
@@ -44,14 +51,6 @@ class Algorithm:
 
     def __crossover_intensity(self, fitness):
         return [x[1] for x in self.CROSSOVER_RATE.items() if fitness < x[0]][0]
-
-    # first element is mode of distribution
-    # if set to true then all members must have almost same values
-    # if false - values should be different
-    # second parameter is number of such priorities, max function will be applied to them
-    # fourth parameter if absolute value or number of parameters matter
-    # true means value
-    # last parameter is should we take this into account
 
     def __init__(self):
         self.team_list = []

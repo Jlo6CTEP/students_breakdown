@@ -30,13 +30,14 @@ tables_with_pk = dict.fromkeys(["course", "credentials", "group_by",
 
 class DbManager:
     db = None
-    max_ids = None
+    max_project_id = None
     id_to_privilege = {}
 
     def __init__(self):
         self.db = postgresql.open(DB_url)
         query = self.db.query('select * from privilege')
         self.id_to_privilege = {x[0]: x[1] for x in query}
+        self.max_project_id = self.db.query("select max(project_id) from project")[0][0]
 
     def __getattr__(self, table_name):
         r = self.db.prepare('select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = $1')(table_name)
@@ -99,7 +100,6 @@ class DbManager:
                 "insert into poll ({}) values ($1,$2,$3,$4)".format("user_id, " + ', '.join(proj_dict.keys()))) \
                 (user_id, *proj_dict.values())
             x.commit()
-        print()
 
     def modify_poll(self, user_id, poll_id, proj_dict):
         self.__is_open(proj_dict)
@@ -139,10 +139,15 @@ class DbManager:
         user_dict.update(priv_dict)
         return user_dict
 
-    def get_student_poll(self, user_id):
+    def get_student_poll(self, user_id, course_id):
         if self.get_priority(user_id) == "student":
-            return {x[0]: x[1] for x in zip(self.poll,
-                                            self.db.prepare("select * from poll where user_id = $1")(user_id)[0])}
+            try:
+                from Alg.Record import Record
+                return Record({x[0]: x[1] for x in zip(self.poll, self.db.prepare(
+                    "select * from poll as k where user_id = $1 and "
+                    "(select course_id from project where project_id = k.project1) = $2")(user_id, course_id)[0][1:])})
+            except IndexError:
+                return None
         else:
             raise AssertionError("User is not a student")
 
@@ -182,7 +187,7 @@ class DbManager:
             for x in group_table:
                 record = self.group_list
                 record['group_id'] = self.db.prepare('select group_id from study_group where "group"=$1') \
-                    (x["group"])[0][0]
+                    (x)[0][0]
                 record['user_id'] = user_id
                 group_list.append(record)
 
@@ -192,6 +197,7 @@ class DbManager:
                 self.db.prepare('insert into group_list ({}) values ($1, $2)'.
                                 format(', '.join(x.keys())))(*x.values())
             t.commit()
+        return user_id
 
     def get_project_teams(self, project_id):
         teams = self.db.prepare('select * from team where project_id = $1')(project_id)
@@ -205,13 +211,12 @@ class DbManager:
                                         self.db.prepare('select * from team where team_id=$1')(team_id)[0][1:])}
 
     def create_team(self, user_dict):
+        user_dict = {x[0]: x[1] for x in user_dict.items() if x[1] is not None}
+
+        insert = 'insert into team ({}) values ({}) returning team_id' \
+            .format(', '.join(user_dict.keys()), ', '.join(['$' + str(x) for x in range(1, len(user_dict) + 1)]))
         with self.db.xact() as t:
             t.start()
-
-            user_dict = {x[0]: x[1] for x in user_dict.items() if x[1] is not None}
-
-            insert = 'insert into team ({}) values ({}) returning team_id' \
-                .format(', '.join(user_dict.keys()), ', '.join(['$' + str(x) for x in range(1, len(user_dict) + 1)]))
             team_id = self.db.prepare(insert)(*user_dict.values())[0][0]
 
             for x in user_dict.items():
@@ -221,13 +226,7 @@ class DbManager:
                     record['team_id'] = team_id
                     self.db.prepare('insert into team_list ({}) values ($1, $2)'. \
                                     format(', '.join(record.keys())))(*record.values())
+            t.commit()
+        return team_id
 
-
-d = DbManager()
-# print(d.get_student_projects(2))
-# print(d.get_ta_projects(3))
-d.create_team({'student1': 1, 'student2': 2, 'student3': 7, 'project_id': 2})
-print(d.get_team_members(2))
-print(d.poll)
-print(d.team)
-print()
+db = DbManager()

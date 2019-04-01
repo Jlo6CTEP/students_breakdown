@@ -1,27 +1,11 @@
 import hashlib
 import postgresql
 from itertools import chain
+from postgresql.exceptions import WrongObjectTypeError
 
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 
-# this names matches column names so be careful
-# MAX_GRADE = 10
-# S_ID = ['student_id']
-# LANGUAGES = ['language1', 'language2', 'language3']  #
-# SKILLS = ['language1_skill', 'language2_skill', 'language3_skill']
-# PSYCH_FACTOR = ['psych_factor']  #
-# EXPERIENCE = ['experience']  #
-# STUDY_GROUP = ['study_group']  #
-# GRADES = ['grades']
-# PROJECTS = ['project1', 'project2', 'project3']  #
-# ROLES = ['role1', 'role2', 'role3']  #
-# CREDENTIALS = ['email', 'password']
-# NAMES = ['name', 'surname']
-# OTHER = []
-#
-# SHORT_SCHEMA = LANGUAGES + SKILLS + PSYCH_FACTOR + GRADES + EXPERIENCE + STUDY_GROUP + PROJECTS + ROLES
-#
-# SCHEMA = SHORT_SCHEMA + CREDENTIALS + NAMES
+undropable_tables = ["course", "project", "study_group", "privilege"]
 
 tables_with_pk = dict.fromkeys(["course", "credentials", "group_by",
                                 "poll", "privilege", "project",
@@ -89,7 +73,7 @@ class DbManager:
         if len(self.db.prepare(query_line)(*proj_dict.values())) != 0:
             raise AssertionError("One of projects is closed")
 
-    def fill_poll(self, user_id, proj_dict):
+    def fill_poll(self, user_id, course_id, proj_dict):
         self.__is_open(proj_dict)
         with self.db.xact() as x:
             query_line = "insert into project_list ({}) values ($1,$2),($3,$4),($5,$6)". \
@@ -97,8 +81,9 @@ class DbManager:
             x.start()
             self.db.prepare(query_line)(*list(chain(*[[user_id, x] for x in proj_dict.values()])))
             self.db.prepare(
-                "insert into poll ({}) values ($1,$2,$3,$4)".format("user_id, " + ', '.join(proj_dict.keys()))) \
-                (user_id, *proj_dict.values())
+                "insert into poll ({}) values ($1,$2,$3,$4,$5)". \
+                    format("user_id, course_id, " + ', '.join(proj_dict.keys())))(user_id, course_id, *proj_dict.values())
+            self.db.prepare("insert into course_list (user_id, course_id) values ($1, $2)")(user_id, course_id)
             x.commit()
 
     def modify_poll(self, user_id, poll_id, proj_dict):
@@ -144,12 +129,19 @@ class DbManager:
             try:
                 from Alg.Record import Record
                 return Record({x[0]: x[1] for x in zip(self.poll, self.db.prepare(
-                    "select * from poll as k where user_id = $1 and "
-                    "(select course_id from project where project_id = k.project1) = $2")(user_id, course_id)[0][1:])})
+                    "select * from poll as k where user_id = $1 and course_id = $2")(user_id, course_id)[0][1:])})
             except IndexError:
                 return None
         else:
             raise AssertionError("User is not a student")
+
+    def get_course_polls(self, course_id):
+        records = []
+        from Alg.Record import Record
+        for record in self.db.prepare("select * from poll where course_id = $1")(course_id):
+            records.append(Record({x[0]: x[1] for x in zip(self.poll, record[1:])}))
+        return records
+
 
     # auchtung injection is possible (but who gives a fuck?)
     # yeah evil abuser can plunge his dirty dick right about here
@@ -228,5 +220,17 @@ class DbManager:
                                     format(', '.join(record.keys())))(*record.values())
             t.commit()
         return team_id
+
+    def clear_db(self):
+        q = list(zip(*self.db.query("select table_name from information_schema.tables "
+                                    "where table_schema = 'public' order by table_name")))[0]
+        for x in q:
+            try:
+                if x not in undropable_tables:
+                    self.db.execute('truncate "{}"'.format(x))
+                    print("Table {} was truncated".format(x))
+            except WrongObjectTypeError:
+                pass
+
 
 db = DbManager()

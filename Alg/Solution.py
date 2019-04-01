@@ -1,6 +1,3 @@
-import random
-from copy import deepcopy, copy
-
 from Alg.Team import Team
 
 

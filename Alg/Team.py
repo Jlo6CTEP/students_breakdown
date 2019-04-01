@@ -31,7 +31,7 @@ class Team(list):
         self.__happiness_var = None
         return self
 
-    def happiness(self):
+    def __get_priority_stack(self):
         if self.__happiness_var:
             return self.__happiness_var
         else:
@@ -49,4 +49,17 @@ class Team(list):
                     for f in x[1]:
                         stack[f] += PROJECT_HAPPINESS * multiplier
                 multiplier /= 2
-            return max(stack)
+            return stack
+
+    def assign_project(self):
+            stack = self.__get_priority_stack()
+            max_happiness, index = 0, 0
+            for x in range(len(stack)):
+                if stack[x] > max_happiness:
+                    max_happiness = stack[x]
+                    index = x
+            self.project = index
+
+    def happiness(self):
+        stack = self.__get_priority_stack()
+        return max(stack)/len(self)

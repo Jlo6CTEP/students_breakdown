@@ -20,7 +20,7 @@ class Solution(list):
             solution.add_team(Team(x))
         return solution
 
-    def fitness(self):
+    def happiness(self):
         if self.__fitness_var:
             return self.__fitness_var
         else:
@@ -36,6 +36,6 @@ class Solution(list):
         self.append(team)
 
     def __lt__(self, other):
-        return self.fitness() < other.fitness()
+        return self.happiness() < other.happiness()
 
 

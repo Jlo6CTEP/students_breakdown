@@ -4,6 +4,10 @@
         <button @click="toggleFeatures" class="toggle-features btn btn-primary btn-sm" type="button">{{ featuresOpen ?
             'Hide Features' : 'ViewFeatures'}}
         </button>
+            <p>
+                <router-link to="/create_survey" class="btn btn-link" >Create new survey</router-link>
+            </p>
+
         <div :key="survey.survey_id" class="survey" v-for="survey in surveys">
             <ul><p> Name: {{survey.name}} </p></ul>
             <ul><p> Due date: {{survey.due_date}} </p></ul>
@@ -14,7 +18,8 @@
         </div>
 
         <div class="[add-survey, survey]" v-if="account.user.role === 'TA'">
-            <router-link to="/createSurvey">Create new survey</router-link>
+            <router-link to="/create_survey">Create new survey</router-link>
+
         </div>
     </div>
 </template>

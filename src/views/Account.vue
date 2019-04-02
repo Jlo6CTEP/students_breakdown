@@ -1,8 +1,8 @@
 <template>
     <div>
-        <h1>Hi {{account.user.firstName}}!</h1>
-        <p>Surname: {{account.user.lastName}}</p>
-        <p>Email: {{account.user.username}}</p>
+        <h2>Name {{account.user.firstName}}!</h2>
+        <h2>Surname: {{account.user.lastName}}</h2>
+        <h2>Email: {{account.user.username}}</h2>
         <p>
             <router-link to="/login">Logout</router-link>
         </p>

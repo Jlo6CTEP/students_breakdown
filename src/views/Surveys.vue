@@ -1,19 +1,17 @@
 <template>
     <div class="main">
         <h1 class="title">Surveys</h1>
+        <button @click="toggleFeatures" class="toggle-features">{{ featuresOpen ? 'Hide Features' : 'ViewFeatures'}}
+        </button>
         <div :key="survey.survey_id" class="survey" v-for="survey in surveys">
-            <p> Name: {{survey.name}}</p>
-            <p> Due date: {{survey.due_date}}</p>
-            <p> Status: {{survey.status}}</p>
+            <ul><p> Name: {{survey.name}} </p></ul>
+            <ul><p> Due date: {{survey.due_date}} </p></ul>
+            <ul><p> Status: {{survey.status}} </p></ul>
             <ul class="features" v-show-slide="featuresOpen">
-                <p>Aliquam lorem</p>
-                <p>Praesent porttitor nulla vitae posuere</p>
-                <p>Suspendisse nisl elit rhoncus</p>
+                <p>memento mori</p>
             </ul>
-            <button @click="toggleFeatures" class="toggle-features">{{ featuresOpen ? 'Hide Features' : 'View Features'
-                }}
-            </button>
         </div>
+
         <div class="[add-survey, survey]" v-if="account.user.role === 'TA'">
             <router-link to="/createSurvey">Create new survey</router-link>
         </div>
@@ -54,13 +52,13 @@
 <style>
     .survey {
         box-sizing: border-box;
-        /*padding: 10px;*/
+        padding: 10px;
         height: 100%;
-        /*position: relative;*/
+        position: relative;
         display: flex;
         margin: 0;
         align-items: center;
-        /*float: left;*/
+        float: left;
     }
 
     .survey:hover {

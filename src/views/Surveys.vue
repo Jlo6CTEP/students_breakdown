@@ -1,7 +1,8 @@
 <template>
     <div class="main">
         <h1 class="title">Surveys</h1>
-        <button @click="toggleFeatures" class="toggle-features">{{ featuresOpen ? 'Hide Features' : 'ViewFeatures'}}
+        <button @click="toggleFeatures" class="toggle-features btn btn-primary btn-sm" type="button">{{ featuresOpen ?
+            'Hide Features' : 'ViewFeatures'}}
         </button>
         <div :key="survey.survey_id" class="survey" v-for="survey in surveys">
             <ul><p> Name: {{survey.name}} </p></ul>

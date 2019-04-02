@@ -82,7 +82,8 @@ class DbManager:
             self.db.prepare(query_line)(*list(chain(*[[user_id, x] for x in proj_dict.values()])))
             self.db.prepare(
                 "insert into poll ({}) values ($1,$2,$3,$4,$5)". \
-                    format("user_id, course_id, " + ', '.join(proj_dict.keys())))(user_id, course_id, *proj_dict.values())
+                    format("user_id, course_id, " + ', '.join(proj_dict.keys())))(user_id, course_id,
+                                                                                  *proj_dict.values())
             self.db.prepare("insert into course_list (user_id, course_id) values ($1, $2)")(user_id, course_id)
             x.commit()
 
@@ -128,12 +129,17 @@ class DbManager:
         if self.get_priority(user_id) == "student":
             try:
                 from Alg.Record import Record
-                return Record({x[0]: x[1] for x in zip(self.poll, self.db.prepare(
+                d = Record({x[0]: x[1] for x in zip(self.poll, self.db.prepare(
                     "select * from poll as k where user_id = $1 and course_id = $2")(user_id, course_id)[0][1:])})
+                for x in d.items():
+                    if x[0].startswith("project"):
+                        d[x[0]] = self.db.prepare('select project_name from project where project_id = $1')(x[1])[0][0]
+                d['course_id'] = self.db.prepare('select name from course where course_id = $1')(d['course_id'])[0][0]
             except IndexError:
                 return None
         else:
             raise AssertionError("User is not a student")
+        return d
 
     def get_course_polls(self, course_id):
         records = []
@@ -141,7 +147,6 @@ class DbManager:
         for record in self.db.prepare("select * from poll where course_id = $1")(course_id):
             records.append(Record({x[0]: x[1] for x in zip(self.poll, record[1:])}))
         return records
-
 
     # auchtung injection is possible (but who gives a fuck?)
     # yeah evil abuser can plunge his dirty dick right about here

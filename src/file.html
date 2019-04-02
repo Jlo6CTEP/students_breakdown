@@ -1,0 +1,28 @@
+<div id="add_match_form">
+    <add-match-form></add-match-form>
+</div>
+
+<template id="add-match-template">
+  <select v-model="selected_game">
+    <option v-for="game in games" :value="game.value">{{game.text}}</option>
+  </select>
+</template>
+
+<Script>
+Vue.component('add-match-form', {
+  template: '#add-match-template',
+  data: function() {
+    return {
+      games: [
+        {'value': 1, 'text': 'Game 1'},
+        {'value': 4, 'text': 'Game 4'}
+      ],
+      selected_game: null
+    }
+  }
+})
+
+new Vue({
+  el: "#add_match_form"
+})
+</Script>

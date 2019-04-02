@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h2>Name {{account.user.firstName}}!</h2>
+        <h2>Name {{account.user.firstName}}</h2>
         <h2>Surname: {{account.user.lastName}}</h2>
         <h2>Email: {{account.user.username}}</h2>
         <p>

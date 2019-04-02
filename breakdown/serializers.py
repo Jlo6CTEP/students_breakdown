@@ -1,16 +1,17 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
+from breakdown.models import Survey
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализация пользователя"""
     class Meta:
         model = User
-        fields = ('url', 'username', 'email', 'groups')
+        fields = ("id", "username", 'first_name', 'last_name')
 
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
+class SurveySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Group
-        fields = ('url', 'name')
-
-
+        model = Survey
+        fields = ('id', 'course', 'opened', 'created', 'name',
+                  'description', 'add_info', 'form_factor', 'min_people', 'max_people')

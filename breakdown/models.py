@@ -1,24 +1,22 @@
+from django.contrib.auth.models import User
 from django.db import models
 
 
 # Create your models here.
-class User(models.Model):
-    username = models.CharField(max_length=100)
-    name = models.CharField(max_length=100)
-    surname = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
+class Survey(models.Model):
+    FORM_FACTOR_CHOICES = [("GR", "Group"), ("CO", "Course"), ("TA", "TA")]
+
+    id = models.AutoField(primary_key=True)
+    course = models.CharField(max_length=30)
+    opened = models.BooleanField(default=True)
+    created = models.DateTimeField()
+    name = models.CharField(max_length=30)
+    description = models.TextField()
+    add_info = models.TextField()
+    form_factor = models.CharField(max_length=30, choices=FORM_FACTOR_CHOICES)
+    min_people = models.PositiveIntegerField()
+    max_people = models.PositiveIntegerField()
 
     class Meta:
-        ordering = ('surname',)
-
-
-"""class Snippet(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
-    title = models.CharField(max_length=100, blank=True, default='')
-    code = models.TextField()
-    linenos = models.BooleanField(default=False)
-    language = models.CharField(choices=LANGUAGE_CHOICES, default='python', max_length=100)
-    style = models.CharField(choices=STYLE_CHOICES, default='friendly', max_length=100)
-
-    class Meta:
-        ordering = ('created',)"""
+        verbose_name = "Survey"
+        verbose_name_plural = "Surveys"

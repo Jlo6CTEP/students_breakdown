@@ -32,3 +32,8 @@ class Survey(APIView):
     def post(self, request):
         Survey.objects.create()
         return Response(status=201)
+
+
+class Course(APIView):
+    """Комнаты чата"""
+    permission_classes = [permissions.IsAuthenticated, ]

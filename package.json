@@ -5,9 +5,11 @@
     "start": "webpack-dev-server --open"
   },
   "dependencies": {
+    "v-show-slide": "^1.6.0",
     "vee-validate": "^2.1.0-beta.6",
     "vue": "^2.5.16",
     "vue-eagle-modal": "^1.0.5",
+    "vue-faq-accordion": "^1.2.1",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1"
   },

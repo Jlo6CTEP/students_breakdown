@@ -36,7 +36,7 @@ class Algorithm:
         for x in self.solution:
             x.assign_project()
         print(self.solution.happiness())
-        print()
+        return self.solution
 
     def __recurse_tree(self, node, records, flag, ret):
         if records < 0:

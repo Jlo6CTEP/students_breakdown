@@ -1,10 +1,8 @@
 from Alg.Algorithm import Algorithm
 from Alg.Solution import Solution
 from DB.db_manager import db
-#a = Algorithm(1)
-#a.do_the_magic()
-
-print(db.get_student_poll(593, 1))
+a = Algorithm(1)
+print(print(a.do_the_magic()))
 
 # r1 = db.get_student_poll(230, 1)
 # r2 = db.get_student_poll(231, 1)

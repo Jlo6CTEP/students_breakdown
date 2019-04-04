@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from breakdown.models import Survey, Course
+from breakdown.models import Project, Course
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -10,14 +10,17 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "username", 'first_name', 'last_name')
 
 
-class SurveySerializer(serializers.ModelSerializer):
+class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Survey
-        fields = ('id', 'course', 'opened', 'created', 'name',
-                  'description', 'add_info', 'form_factor', 'min_people', 'max_people')
+        model = Project
+        fields = (
+            'project_id', 'project_name', 'is_open', 'due_date',
+            'course_id', 'min_student', 'max_student',
+            'group_by', 'description', 'additional_info'
+        )
 
 
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ('id', 'name')
+        fields = ('course_id', 'name')

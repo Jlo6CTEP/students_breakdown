@@ -3,31 +3,31 @@ from django.db import models
 
 
 # Create your models here.
-class Survey(models.Model):
-    FORM_FACTOR_CHOICES = [("GR", "Group"), ("CO", "Course"), ("TA", "TA")]
+class Project(models.Model):
+    GROUP_BY_CHOICES = [(3, "Group"), (2, "Course"), (1, "TA")]
 
-    id = models.AutoField(primary_key=True)
-    course = models.CharField(max_length=30)
-    opened = models.BooleanField(default=True)
-    created = models.DateTimeField()
-    name = models.CharField(max_length=30)
-    description = models.TextField()
-    add_info = models.TextField()
-    form_factor = models.CharField(max_length=30, choices=FORM_FACTOR_CHOICES)
-    min_people = models.PositiveIntegerField(default=4)
-    max_people = models.PositiveIntegerField(default=6)
+    project_id = models.AutoField(primary_key=True)
+    project_name = models.CharField(max_length=20)
+    is_open = models.BooleanField(default=True)
+    due_date = models.TimeField()
+    course_id = models.IntegerField() # foreigh key
+    min_student = models.PositiveIntegerField(default=4)
+    max_student = models.PositiveIntegerField(default=6)
+    group_by = models.IntegerField(choices=GROUP_BY_CHOICES)
+    description = models.CharField(max_length=128)
+    additional_info = models.CharField(max_length=512)
 
     def __str__(self):
-        return str(self.id) + ". " + self.course + "." + self.name
+        return str(self.project_id) + ". " + self.project_name + " [" + str(self.course_id) + "]"
 
     class Meta:
-        verbose_name = "Survey"
-        verbose_name_plural = "Surveys"
+        verbose_name = "Project"
+        verbose_name_plural = "Projects"
 
 
 class Course(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=30)
+    course_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=20)
 
     class Meta:
         verbose_name = "Course"

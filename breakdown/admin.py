@@ -1,21 +1,24 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
-from .models import Survey, Course
+from .models import Project, Course
 
 
-# Register your models here.
-#class UserAdmin(admin.ModelAdmin):
-#    list_display = ("id", "name", "surname", "username")
-
-
-class SurveyAdmin(admin.ModelAdmin):
-    list_filter = ('course', 'opened')
-    list_display = ('id', 'course', 'opened', 'created', 'name', 'form_factor', ('min_people', 'max_people'))
+class ProjectAdmin(admin.ModelAdmin):
+    list_filter = ('course_id', 'is_open')
+    list_display = (
+        'project_id', 'project_name',
+        'is_open',
+        'due_date',
+        'course_id',
+        'min_student', 'max_student',
+        'group_by',
+        'description',
+        'additional_info'
+    )
 
 
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
+    list_display = ('course_id', 'name')
 
 
-admin.site.register(Survey, SurveyAdmin)
+admin.site.register(Project, ProjectAdmin)
 admin.site.register(Course, CourseAdmin)

@@ -40,7 +40,7 @@ class DbManager:
         query = self.db.prepare('select * from project_list where user_id = $1')(student_id)
         polls = []
         for row in query:
-            project = self.db.prepare('select * from project where project_id = $1')(row[0])
+            project = self.db.prepare('select * from breakdown_project  where project_id = $1')(row[0])
             project_dict = {x[0]: x[1] for x in zip(self.project, project[0])}
             project_dict = {k: project_dict[k] for k in set(project_dict) - set(template)}
             polls.append(project_dict)
@@ -60,7 +60,7 @@ class DbManager:
 
     def create_new_project(self, user_id, poll_info):
         if self.get_priority(user_id) == "ta":
-            query_line = "insert into project ({}) values ({})". \
+            query_line = "insert into breakdown_project  ({}) values ({})". \
                 format(', '.join(poll_info.keys()),
                        ', '.join(["$" + str(x) for x in range(len(poll_info))]))
             self.db.prepare(query_line)(*poll_info.values())
@@ -68,7 +68,7 @@ class DbManager:
             raise AssertionError("User is not a TA")
 
     def __is_open(self, proj_dict):
-        query_line = "select * from project where is_open = false and project_id in ({})". \
+        query_line = "select * from breakdown_project  where is_open = false and project_id in ({})". \
             format(', '.join(["$" + str(x) for x in range(1, len(proj_dict) + 1)]))
         if len(self.db.prepare(query_line)(*proj_dict.values())) != 0:
             raise AssertionError("One of projects is closed")
@@ -112,7 +112,7 @@ class DbManager:
                                     '(select group_id from group_list where user_id = $1)')(user_id)
         group_dict = [{x[0]: x[1] for x in zip(self.study_group, row[1:])} for row in group_row]
 
-        course_row = self.db.prepare('select * from course where course_id in '
+        course_row = self.db.prepare('select * from breakdown_course where course_id in '
                                      '(select course_id from course_list where user_id = $1)')(user_id)
         course_dict = [{x[0]: x[1] for x in zip(self.course, row[1:])} for row in course_row]
 
@@ -133,8 +133,8 @@ class DbManager:
                     "select * from poll as k where user_id = $1 and course_id = $2")(user_id, course_id)[0][1:])})
                 for x in d.items():
                     if x[0].startswith("project"):
-                        d[x[0]] = self.db.prepare('select project_name from project where project_id = $1')(x[1])[0][0]
-                d['course_id'] = self.db.prepare('select name from course where course_id = $1')(d['course_id'])[0][0]
+                        d[x[0]] = self.db.prepare('select project_name from breakdown_project  where project_id = $1')(x[1])[0][0]
+                d['course_id'] = self.db.prepare('select name from breakdown_course where course_id = $1')(d['course_id'])[0][0]
             except IndexError:
                 return None
         else:

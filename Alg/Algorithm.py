@@ -1,15 +1,9 @@
 import random
-
-from Alg.Solution import Solution
 from DB.db_manager import db
 from Alg.Team import MEMBER_COUNT
-from math import ceil
 
-NORMALIZE_TO = 10 / 100
-POPULATION_SIZE = 20
-
-BEST_SOLUTIONS = 8
-BASE_CROSSOVER_RATE = 8
+NORMALIZE_TO = 10/100
+POPULATION_SIZE = 100
 
 language_priority = [True, 3, 75 * NORMALIZE_TO, False, True]
 skill_priority = [False, 3, 75 * NORMALIZE_TO, True, False]
@@ -30,21 +24,6 @@ def priority_vector():
 
 class Algorithm:
     team_list = None
-
-    CROSSOVER_RATE = {200: ceil(BASE_CROSSOVER_RATE/1),
-                      206: ceil(BASE_CROSSOVER_RATE/2),
-                      212: ceil(BASE_CROSSOVER_RATE/3),
-                      219: ceil(BASE_CROSSOVER_RATE/4),
-                      225: ceil(BASE_CROSSOVER_RATE/5),
-                      231: ceil(BASE_CROSSOVER_RATE/6),
-                      238: ceil(BASE_CROSSOVER_RATE/7),
-                      244: ceil(BASE_CROSSOVER_RATE/8),
-                      250: ceil(BASE_CROSSOVER_RATE/9),
-                      100500: ceil(BASE_CROSSOVER_RATE/9)}
-
-    def __crossover_intensity(self, fitness):
-        return [x[1] for x in self.CROSSOVER_RATE.items() if fitness < x[0]][0]
-
     # first element is mode of distribution
     # if set to true then all members must have almost same values
     # if false - values should be different
@@ -61,23 +40,12 @@ class Algorithm:
         student_list = db.get_students()
 
         population = []
+        from Alg.Team import Team
         for x in range(POPULATION_SIZE):
             random.shuffle(student_list)
-            solution = Solution()
-            for f in range(0, len(student_list), MEMBER_COUNT):
-                solution.add_team(sum(student_list[f:f+MEMBER_COUNT]))
+            solution = [Team() for x in range(len(student_list)//MEMBER_COUNT)]
+            for f in range(len(student_list)):
+                solution[f//MEMBER_COUNT] += student_list[f]
             population.append(solution)
-        fitness = 0
-        generation = 0
-        population.sort(reverse=True)
-        while fitness < 250:
-            fitness = population[0].fitness()
-            print("Generation: {}, best result: {}".format(generation, fitness))
-            crossover_rate = self.__crossover_intensity(fitness)
-            heirs = []
-            for x in population[:BEST_SOLUTIONS]:
-                heirs.append(x.self_fuck(crossover_rate))
-            population[len(population)-BEST_SOLUTIONS-1:] = heirs
-            population.sort(reverse=True)
-            generation += 1
-        return population[0]
+            solution = []
+        print()

@@ -1,14 +1,19 @@
 <template>
-    <form>
+    <form >
+        <div> <h2>Create new survey</h2>
+        </div>
         <div class="form-group" >
             <label for="courseName">Course name: </label>
-            <input type="text" class="form-control" id="courseName" placeholder="ex. Software project">
+            <input type="text" v-model = "courseName" class="form-control" id="courseName" placeholder="ex. Software project" style = "width: 300px">
         </div>
-        <div class="form-group">
+
+        <div class="form-group" id="numberOfTeamMembers" >
+           <label for="minNumberOfTeamMembers"> Minimum number of members in a team: </label>
+            <input type="number"  v-model = "minNum" min="1" class="form-control" id="minNumberOfTeamMembers" placeholder="ex. 2" style = "width: 75px">
             <label for="maxNumberOfTeamMembers"> Maximum number of members in a team: </label>
-            <input type="number" class="form-control" id="maxNumberOfTeamMembers" placeholder="ex. 5">
+            <input type="number" v-model = "maxNum" min='1' class="form-control" id="maxNumberOfTeamMembers" placeholder="ex. 5" style = "width: 75px">
         </div>
-        <div id="studyGroups" class="form-group">
+      <!--  <div id="studyGroups" class="form-group">
             <label for="studyGroups">Involve to course project the chosen study groups:</label>
             <br>
             <input type="checkbox" id="BS17-01" value="BS17-01" v-model="checkedGroups">
@@ -29,7 +34,7 @@
             <label for="BS17-01">BS17-08</label>
             <br>
             <span>Chosen groups: {{ checkedGroups }}</span>
-        </div>
+        </div>-->
         <div  class="form-group" id="amongGroup">
             <label for="amongGroup"> Form group from students among: </label>
             <br>
@@ -42,19 +47,64 @@
         <input type="radio" id="three_among" value="One course" v-model="picked">
         <label for="three_among">One course</label>
         <br>
-       <!-- <span>Выбрано: {{ amongGroup }}</span>-->
         </div>
+
+        <div class="form-topics" id="projectTopics">
+            <label for="projectTopics"> List project topics below </label>
+            <br>
+            <textarea v-model="projectTopic" placeholder="ex. Topic1, Topic2,..." style = "width: 300px"></textarea>
+        </div>
+        <div>
+            <button v-on:click="createSurvey" class="btn btn-primary">Create survey</button>
+            <router-link to="/"  class="btn btn-link">Return back to Home page</router-link>
+        </div>
+       <!-- <img src="Picture.jpg" alt="There might be a cat:(">-->
+
+
     </form>
 </template>
 
 <script>
+    import { getProject, saveProject } from "./survey";
+
+
     export default {
-        name: "SurveyCreationPage",
-        el: '#studyGroups',
-        data:{
-            checkedGroups: '',
-            picked: '',
-        }
+        //name: "projects",
+        prj:[],
+        data() {
+            /*
+            .form-topics {
+                    width: 300px;
+                    height: 100px;
+                }
+
+                color:red
+            }*/
+            return {
+                projects: [],
+                minNum: '',
+                maxNum: '',
+                courseName: 'SWP',
+                projectTopic: '',
+                picked: ''
+            };
+        },
+        methods: {
+            createSurvey: function () {
+                alert('New survey for ' + this.courseName + ' course project were created!'),
+                    saveProject(data)
+                            }
+        },
+
+        created() {
+            getProject()
+                .then((response) => response.json())
+                .then(response => {
+                    this.prj = response.data;
+                });
+           // saveProject(data)
+        },
+        components: {}
     }
 
 </script>

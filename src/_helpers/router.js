@@ -4,6 +4,9 @@ import Router from 'vue-router';
 import HomePage from '../home/HomePage'
 import LoginPage from '../login/LoginPage'
 import RegisterPage from '../register/RegisterPage'
+import SurveyCreationPage from "../surveyCreation/SurveyCreationPage";
+import CheckPage from "../surveyCreation/CheckPage";
+
 import Contact from '../views/Contact'
 
 Vue.use(Router);
@@ -36,6 +39,12 @@ export const router = new Router({
             name: "surveys",
             component: () =>
                 import("../views/Surveys.vue")
+        },{
+            path: '/create_survey',
+            component: SurveyCreationPage
+        }, {
+            path: '/check',
+            component: CheckPage
         }, {
             path: '*',
             redirect: '/'

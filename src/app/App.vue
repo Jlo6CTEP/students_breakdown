@@ -5,9 +5,10 @@
             <div class="row">
                 <div class="col-sm-6 offset-sm-3">
                     <div :class="`alert ${alert.type}`" v-if="alert.message">{{alert.message}}</div>
-                    <router-view></router-view>
+                    <router-view/>
                 </div>
             </div>
+            <Footer/>
         </div>
     </div>
 </template>
@@ -15,6 +16,7 @@
 <script>
     import {mapActions, mapState} from 'vuex'
     import Header from "../components/Header";
+    import Footer from "../components/Footer";
 
 
     export default {
@@ -35,7 +37,8 @@
                 this.clearAlert();
             }
         }, components: {
-            Header
+            Header,
+            Footer
         }
 
     };

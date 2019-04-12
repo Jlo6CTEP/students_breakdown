@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.http import JsonResponse
 from django.contrib.auth.models import User, Group
 
 from rest_framework import viewsets
@@ -8,6 +9,10 @@ from rest_framework import permissions
 
 from .serializers import UserSerializer, ProjectSerializer
 from .models import Project
+
+
+def names(request):
+  return JsonResponse({'names': ['William', 'Rod', 'Grant']})
 
 
 # Create your views here

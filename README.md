@@ -1,4 +1,4 @@
-# students-breakdown
+# students_breakdown
 
 > A Vue.js project
 

@@ -54,13 +54,14 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'students_breakdown.urls'
 
 STATICFILES_DIRS = [
-  os.path.join(BASE_DIR, 'templates/static'),
+  os.path.join(BASE_DIR, 'dist/static'),
 ]
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': [os.path.join(BASE_DIR, 'templates'),
+                 os.path.join(BASE_DIR, 'dist')]
         ,
         'APP_DIRS': True,
         'OPTIONS': {

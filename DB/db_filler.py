@@ -25,5 +25,7 @@ for x in range(200):
                             "name": names[x], "surname": random.choice(surnames),
                             "study_group": [random.choice(study_groups)[1]], "username": usernames[x],
                             "priv_name": "student"})
-    db.fill_poll(sid, 1, {x[0]: x[1] for x in zip(["topic1", "topic2", "topic3"], random.sample(topics, k=3))})
+    poll = {x[0]: x[1] for x in zip(["topic1", "topic2", "topic3"], random.sample(topics, k=3))}
+    poll.update({"course_id": 3, "project_id": 15})
+    db.fill_poll(sid, poll)
     print("Done {}".format(x))

@@ -8,22 +8,20 @@ class Algorithm:
     solution = None
     min_student = None
     max_student = None
-    course_id = None
+    project_id = None
 
-    def __init__(self, course_id):
+    def __init__(self, project_id):
         super().__init__()
         self.solution = Solution()
-        self.course_id = course_id
-        self.min_student, self.max_student = \
-            db.db.prepare("select min_student, max_student from project where course_id = $1") \
-            (self.course_id)[0]
+        self.project_id = project_id
+        project = db.get_project_info(project_id)
+        self.min_student, self.max_student = project['min_student'], project['max_student']
 
     def do_the_magic(self):
-        records = db.get_course_polls(self.course_id)
+        records = db.get_project_polls(self.project_id)
 
         for x in range(3, 0, -1):
-            records.sort(key=lambda f: f['project{}'.format(x)])
-            print()
+            records.sort(key=lambda f: f['topic{}'.format(x)])
 
         tree = Node("init")
         flag = True

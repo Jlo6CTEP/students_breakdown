@@ -6,7 +6,7 @@ from DB.db_manager import db
 
 db1 = postgresql.open("pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt")
 
-projects = list(zip(*db1.query("select project_id from project")))[0]
+topics = list(zip(*db1.query("select topic_id from topic")))[0]
 study_groups = db1.query("select * from study_group")
 
 # experience + skill_offsets (to make PL skills correlating with experience)
@@ -25,5 +25,5 @@ for x in range(200):
                             "name": names[x], "surname": random.choice(surnames),
                             "study_group": [random.choice(study_groups)[1]], "username": usernames[x],
                             "priv_name": "student"})
-    db.fill_poll(sid, 1, {x[0]: x[1] for x in zip(["project1", "project2", "project3"], random.sample(projects, k=3))})
+    db.fill_poll(sid, 1, {x[0]: x[1] for x in zip(["topic1", "topic2", "topic3"], random.sample(topics, k=3))})
     print("Done {}".format(x))

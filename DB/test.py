@@ -1,7 +1,7 @@
 from Alg.Algorithm import Algorithm
 from Alg.Solution import Solution
 from DB.db_manager import db
-db.clear_db()
+print(db.get_projects())
 
 # r1 = db.get_student_poll(230, 1)
 # r2 = db.get_student_poll(231, 1)

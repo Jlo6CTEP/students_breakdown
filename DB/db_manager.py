@@ -11,7 +11,7 @@ clearable_tables = {"poll", "project", "team", "team_list",
 
 tables_with_pk = dict.fromkeys(["course", "credentials", "group_by",
                                 "poll", "privilege", "topic",
-                                "study_group", "team", "user"])
+                                "study_group", "team", "user", "project"])
 
 
 class DbManager:
@@ -230,6 +230,13 @@ class DbManager:
                                     format(', '.join(record.keys())))(*record.values())
             t.commit()
         return team_id
+
+    def get_projects(self):
+        projects = self.db.query('select * from project')
+        projects_dict = []
+        for row in projects:
+            projects_dict.append({x[0]: x[1] for x in zip(self.project, row[1:])})
+        return projects_dict
 
     def clear_db(self):
         q = list(zip(*self.db.query("select table_name from information_schema.tables "

@@ -10,8 +10,13 @@ clearable_tables = {"poll", "project", "team", "team_list",
                     "breakdown_course", "project_list", "course_list"}
 
 tables_with_pk = dict.fromkeys(["course", "credentials", "group_by",
+<<<<<<< HEAD
                                 "poll", "privilege", "topic",
                                 "study_group", "team", "user", "project"])
+=======
+                                "poll", "privilege", "topic", "project",
+                                "study_group", "team", "user"])
+>>>>>>> bfa9dbe4e991ae692a53598ccdcf8c6f2d715be4
 
 
 class DbManager:
@@ -38,31 +43,25 @@ class DbManager:
         student = self.db.prepare('select priv_id from "user" where user_id = $1')(user_id)[0]
         return self.id_to_privilege[student[0]]
 
-    def __get_user_projects(self, student_id, template):
-        query = self.db.prepare('select * from project_topic_list where topic_id = $1')(student_id)
-        polls = []
+    def get_user_topics(self, user_id):
+        query = self.db.prepare('select * from user_topic_list where user_id = $1')(user_id)
+        topics = []
         for row in query:
-            project = self.db.prepare('select * from project  where project_id = $1')(row[0])
-            project_dict = {x[0]: x[1] for x in zip(self.project, project[0])}
-            project_dict = {k: project_dict[k] for k in set(project_dict) - set(template)}
-            polls.append(project_dict)
-        return polls
-
-    def get_student_projects(self, user_id):
-        if self.get_priority(user_id) == "student":
-            return self.__get_user_projects(user_id, {"min_student": None, "max_student": None})
-        else:
-            raise AssertionError("User is not a student")
+            topic = self.db.prepare('select topic_name from topic where topic_id= $1')(row[1])
+            project_dict = {x[0]: x[1] for x in zip(self.topic, topic[0])}
+            topics.append(project_dict)
+        return topics
 
     def get_ta_projects(self, user_id):
         if self.get_priority(user_id) == "ta":
-            return self.__get_user_projects(user_id, {})
+            self.db.prepare("select * from project where project_id in "
+                            "(select project_id from ta_project_list where user_id = $1)")
         else:
             raise AssertionError("User is not a TA")
 
     def create_new_project(self, user_id, poll_info):
         if self.get_priority(user_id) == "ta":
-            query_line = "insert into project  ({}) values ({})". \
+            query_line = "insert into project ({}) values ({})". \
                 format(', '.join(poll_info.keys()),
                        ', '.join(["$" + str(x) for x in range(len(poll_info))]))
             self.db.prepare(query_line)(*poll_info.values())
@@ -73,26 +72,30 @@ class DbManager:
         query_line = "select * from project where project_id in " \
                      "(select project_id from project_topic_list where topic_id in ({})) and is_open = false". \
             format(', '.join(["$" + str(x) for x in range(1, len(topic_dict) + 1)]))
-        if len(self.db.prepare(query_line)(*topic_dict.values())) != 0:
-            raise AssertionError("One of topics is closed")
+        return len(self.db.prepare(query_line)(*topic_dict.values())) == 0
 
-    def fill_poll(self, user_id, course_id, topic_dict):
-        self.__is_open(topic_dict)
+    def fill_poll(self, user_id, topic_dict):
+        if not self.__is_open({x[0]: x[1] for x in topic_dict.items() if x[0].startswith("topic")}):
+            raise AssertionError("One of projects is closed")
         with self.db.xact() as x:
-            query_line = "insert into topic_list ({}) values ($1,$2),($3,$4),($5,$6)". \
-                format(', '.join(self.topic_list.keys()))
+            query_line = "insert into user_topic_list ({}) values ($1,$2),($3,$4),($5,$6)". \
+                format(', '.join(self.user_topic_list.keys()))
             x.start()
-            self.db.prepare(query_line)(*list(chain(*[[user_id, x] for x in topic_dict.values()])))
-            self.db.prepare(
-                "insert into poll ({}) values ($1,$2,$3,$4,$5)". \
-                    format("user_id, course_id, " + ', '.join(topic_dict.keys())))(user_id, course_id,
-                                                                                   *topic_dict.values())
-            self.db.prepare("insert into course_list (user_id, course_id) values ($1, $2)")(user_id, course_id)
+            self.db.prepare(query_line)(*list(chain(*[[user_id, x[1]] for x in topic_dict.items()
+                                                      if x[0].startswith("topic")])))
+
+            self.db.prepare("insert into poll ({}) values ($1,$2,$3,$4,$5,$6)".
+                            format("user_id, " + ', '.join(topic_dict.keys())))(user_id, *topic_dict.values())
+            if len(self.db.prepare("select * from course_list where (user_id, course_id) = ($1, $2)")
+                    (user_id, topic_dict['course_id'])) == 0:
+                self.db.prepare("insert into course_list (user_id, course_id) values ($1, $2)") \
+                    (user_id, topic_dict['course_id'])
             x.commit()
 
     def modify_poll(self, user_id, poll_id, topic_dict):
-        self.__is_open(topic_dict)
-        poll = self.db.prepare("select ({}) from poll where poll_id = $1 and user_id = $2". \
+        if not self.__is_open(topic_dict):
+            raise AssertionError("One of projects is closed")
+        poll = self.db.prepare("select ({}) from poll where poll_id = $1 and user_id = $2".
                                format(', '.join(topic_dict.keys())))(poll_id, user_id)[0]
         old = {x[1]: x[0] for x in zip(poll, topic_dict.keys())}
         if len(old) == 0:
@@ -103,7 +106,7 @@ class DbManager:
             t.start()
             self.db.prepare(query)(poll_id, user_id, *topic_dict.values())
             for x in old.keys():
-                self.db.prepare("update project_topic_list set project_id = $1 where topic_id = $2 and project_id = $3") \
+                self.db.prepare("update project_topic_list set project_id=$1 where topic_id=$2 and project_id = $3") \
                     (topic_dict[x], user_id, old[x])
             t.commit()
 
@@ -112,7 +115,7 @@ class DbManager:
         user_dict = {x[0]: x[1] for x in zip(self.user, user_row)}
 
         group_row = self.db.prepare('select * from study_group where group_id in '
-                                    '(select group_id from group_list where user_id = $1)')(user_id)
+                                    '(select group_id from user_group_list where user_id = $1)')(user_id)
         group_dict = [{x[0]: x[1] for x in zip(self.study_group, row[1:])} for row in group_row]
 
         course_row = self.db.prepare('select * from breakdown_course where course_id in '
@@ -135,8 +138,8 @@ class DbManager:
                 d = Record({x[0]: x[1] for x in zip(self.poll, self.db.prepare(
                     "select * from poll as k where user_id = $1 and course_id = $2")(user_id, course_id)[0][1:])})
                 for x in d.items():
-                    if x[0].startswith("project"):
-                        d[x[0]] = self.db.prepare('select project_name from project  where project_id = $1') \
+                    if x[0].startswith("topic"):
+                        d[x[0]] = self.db.prepare('select topic_name from topic  where topic_id = $1') \
                             (x[1])[0][0]
                 d['course_id'] = self.db.prepare('select name from breakdown_course where course_id = $1') \
                     (d['course_id'])[0][0]
@@ -146,10 +149,10 @@ class DbManager:
             raise AssertionError("User is not a student")
         return d
 
-    def get_course_polls(self, course_id):
+    def get_project_polls(self, project_id):
         records = []
         from Alg.Record import Record
-        for record in self.db.prepare("select * from poll where course_id = $1")(course_id):
+        for record in self.db.prepare("select * from poll where project_id = $1")(project_id):
             records.append(Record({x[0]: x[1] for x in zip(self.poll, record[1:])}))
         return records
 
@@ -185,24 +188,25 @@ class DbManager:
             h.update(credential_table['password'].encode("ASCII"))
             credential_table['password'] = h.hexdigest()
 
-            group_list = []
+            user_group_list = []
             for x in group_table:
-                record = self.group_list
+                record = self.user_group_list
                 record['group_id'] = self.db.prepare('select group_id from study_group where "group"=$1') \
                     (x)[0][0]
                 record['user_id'] = user_id
-                group_list.append(record)
+                user_group_list.append(record)
 
             self.db.prepare('insert into credentials ({}) values  ($1, $2, $3)'.
                             format(', '.join(credential_table.keys())))(*credential_table.values())
-            for x in group_list:
-                self.db.prepare('insert into group_list ({}) values ($1, $2)'.
+            for x in user_group_list:
+                self.db.prepare('insert into user_group_list ({}) values ($1, $2)'.
                                 format(', '.join(x.keys())))(*x.values())
             t.commit()
         return user_id
 
     def get_project_teams(self, project_id):
-        teams = self.db.prepare('select * from team where topic_id = $1')(project_id)
+        teams = self.db.prepare('select * from team where topic_id in '
+                                '(select topic_id from project_topic_list where project_id = $1)')(project_id)
         teams_dict = []
         for row in teams:
             teams_dict.append({x[0]: x[1] for x in zip(self.team, row[1:])})
@@ -212,22 +216,19 @@ class DbManager:
         return {x[0]: x[1] for x in zip(self.team,
                                         self.db.prepare('select * from team where team_id=$1')(team_id)[0][1:])}
 
-    def create_team(self, user_dict):
-        user_dict = {x[0]: x[1] for x in user_dict.items() if x[1] is not None}
+    def create_team(self, course_id, topic_id, users):
 
-        insert = 'insert into team ({}) values ({}) returning team_id' \
-            .format(', '.join(user_dict.keys()), ', '.join(['$' + str(x) for x in range(1, len(user_dict) + 1)]))
+        insert = 'insert into team (topic_id, course_id) values ($1, $2) returning team_id'
         with self.db.xact() as t:
             t.start()
-            team_id = self.db.prepare(insert)(*user_dict.values())[0][0]
+            team_id = self.db.prepare(insert)(topic_id, course_id)[0][0]
 
-            for x in user_dict.items():
-                if x[0].startswith('student'):
-                    record = self.team_list
-                    record['user_id'] = x[1]
-                    record['team_id'] = team_id
-                    self.db.prepare('insert into team_list ({}) values ($1, $2)'. \
-                                    format(', '.join(record.keys())))(*record.values())
+            for x in users:
+                record = self.student_team_list
+                record['user_id'] = x
+                record['team_id'] = team_id
+                self.db.prepare('insert into student_team_list ({}) values ($1, $2)'. \
+                                format(', '.join(record.keys())))(*record.values())
             t.commit()
         return team_id
 
@@ -237,6 +238,15 @@ class DbManager:
         for row in projects:
             projects_dict.append({x[0]: x[1] for x in zip(self.project, row[1:])})
         return projects_dict
+
+    def get_project_info(self, project_id):
+        project = self.db.prepare("select * from project where project_id = $1")(project_id)[0]
+        return {x[0]: x[1] for x in zip(self.project, project[1:])}
+
+    def add_project(self, project_info):
+        line = 'insert into project ({}) values ({}) returning project_id'. \
+            format(', '.join(project_info.keys()), ', '.join(['$' + str(x) for x in range(1, len(project_info) + 1)]))
+        return self.db.prepare(line)(*project_info.values())[0][0]
 
     def clear_db(self):
         q = list(zip(*self.db.query("select table_name from information_schema.tables "

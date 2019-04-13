@@ -10,8 +10,13 @@ clearable_tables = {"poll", "project", "team", "team_list",
                     "breakdown_course", "project_list", "course_list"}
 
 tables_with_pk = dict.fromkeys(["course", "credentials", "group_by",
+<<<<<<< HEAD
+                                "poll", "privilege", "topic",
+                                "study_group", "team", "user", "project"])
+=======
                                 "poll", "privilege", "topic", "project",
                                 "study_group", "team", "user"])
+>>>>>>> bfa9dbe4e991ae692a53598ccdcf8c6f2d715be4
 
 
 class DbManager:
@@ -309,6 +314,13 @@ db = DbManager()
                                 format(', '.join(record.keys())))(*record.values())
             t.commit()
         return team_id
+
+    def get_projects(self):
+        projects = self.db.query('select * from project')
+        projects_dict = []
+        for row in projects:
+            projects_dict.append({x[0]: x[1] for x in zip(self.project, row[1:])})
+        return projects_dict
 
     def get_project_info(self, project_id):
         project = self.db.prepare("select * from project where project_id = $1")(project_id)[0]

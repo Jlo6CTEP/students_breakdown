@@ -8,11 +8,16 @@ from rest_framework.response import Response
 from rest_framework import permissions
 
 from .serializers import UserSerializer, ProjectSerializer
-from .models import Project
+from .models import Survey
 
 
 def names(request):
-  return JsonResponse({'names': ['William', 'Rod', 'Grant']})
+    return JsonResponse({'names': ['William', 'Rod', 'Grant']})
+
+
+def surveys(request):
+    print(request)
+    return Survey().get(request)
 
 
 # Create your views here
@@ -29,12 +34,12 @@ class Survey(APIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
     def get(self, request):
-        surveys = Project.objects.filter(Q(id=request.id))
+        surveys = Survey.objects.filter(Q(id=request.id))
         serializer = ProjectSerializer(surveys, many=True)
         return Response({"data": serializer.data})
 
     def post(self, request):
-        Project.objects.create()
+        Survey.objects.create()
         return Response(status=201)
 
 

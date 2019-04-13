@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Project, Course
+from .models import Survey, Course
 
 
 class ProjectAdmin(admin.ModelAdmin):
@@ -20,5 +20,5 @@ class CourseAdmin(admin.ModelAdmin):
     list_display = ('course_id', 'name')
 
 
-admin.site.register(Project, ProjectAdmin)
+admin.site.register(Survey, ProjectAdmin)
 admin.site.register(Course, CourseAdmin)

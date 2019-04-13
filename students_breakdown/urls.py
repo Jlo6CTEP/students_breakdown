@@ -31,5 +31,5 @@ urlpatterns = [
     # path('', include(router.urls)),
     url(r'^$', TemplateView.as_view(template_name='index.html')),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api_example', include('breakdown.urls')),
+    path('', include('breakdown.urls')),
 ]

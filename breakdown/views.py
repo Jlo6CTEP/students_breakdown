@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
 
-from .serializers import UserSerializer, ProjectSerializer
+from .serializers import UserSerializer, SurveySerializer
 from .models import Survey
 
 
@@ -30,12 +30,17 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class Survey(APIView):
-    """Комнаты чата"""
     permission_classes = [permissions.IsAuthenticated, ]
 
     def get(self, request):
-        surveys = Survey.objects.filter(Q(id=request.id))
-        serializer = ProjectSerializer(surveys, many=True)
+        """surveys = Survey.objects.filter(Q(id=request.id))
+        serializer = ProjectSerializer(surveys, many=True)"""
+
+        user_id = 1
+        surveys = 
+        print(surveys)
+        serializer = SurveySerializer(surveys, many=True)
+
         return Response({"data": serializer.data})
 
     def post(self, request):

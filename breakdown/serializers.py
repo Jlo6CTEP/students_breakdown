@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "username", 'first_name', 'last_name')
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         fields = (

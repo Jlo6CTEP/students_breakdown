@@ -10,6 +10,8 @@ from rest_framework import permissions
 from .serializers import UserSerializer, SurveySerializer
 from .models import Survey
 
+from DB.db_manager import db
+
 
 def names(request):
     return JsonResponse({'names': ['William', 'Rod', 'Grant']})
@@ -33,15 +35,10 @@ class Survey(APIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
     def get(self, request):
-        """surveys = Survey.objects.filter(Q(id=request.id))
-        serializer = ProjectSerializer(surveys, many=True)"""
-
-        user_id = 1
-        surveys = 
-        print(surveys)
+        surveys = db.get_projects()
         serializer = SurveySerializer(surveys, many=True)
-
-        return Response({"data": serializer.data})
+        res = JsonResponse({"data": serializer.data})
+        return res
 
     def post(self, request):
         Survey.objects.create()

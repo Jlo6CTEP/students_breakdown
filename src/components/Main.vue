@@ -6,7 +6,6 @@
 
     <section v-else>
       <div v-if="loading">Loading...</div>
-
       <div
         class="survey"
         v-else
@@ -16,16 +15,7 @@
                 v-bind:is_formed="survey.is_formed"
                 v-bind:name="survey.name"/>
       </div>
-
     </section>
-    <div
-      class="survey"
-      v-for="survey in surveys">
-      <Survey v-bind:course="survey.course"
-              v-bind:due_date="survey.due_date"
-              v-bind:is_formed="survey.is_formed"
-              v-bind:name="survey.name"/>
-    </div>
   </div>
 </template>
 
@@ -45,17 +35,14 @@
     },
     mounted() {
       axios
-        .get(`${config.apiUrl}/user/surveys`)
+        .get(`http://127.0.0.1:8000/user/surveys`)
         .then(response => {
-          this.surveys = response
+          console.log(response.data.data);
+          this.surveys = response.data.data;
         })
         .catch(error => {
           console.log(error);
-          this.surveys = [
-            {name: "Group project", course: "SWP", due_date: "2019-05-18", is_formed: false},
-            {name: "Assigment II", course: "AI", due_date: "2019-03-18", is_formed: false},
-            {name: "Assigment I", course: "AI", due_date: "2019-03-18", is_formed: true},
-          ];
+
           this.errored = true;
         })
         .finally(() => {

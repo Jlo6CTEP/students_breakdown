@@ -7,6 +7,7 @@
             <div :class="`alert ${alert.type}`" v-if="alert.message">{{alert.message}}</div>
             <router-view/>
           </div>
+          </div>
         </div>
       </div>
     </div>

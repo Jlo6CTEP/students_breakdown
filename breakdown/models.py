@@ -9,7 +9,7 @@ class Survey(models.Model):
     project_id = models.AutoField(primary_key=True)
     project_name = models.CharField(max_length=20)
     is_open = models.BooleanField(default=True)
-    due_date = models.TimeField()
+    due_date = models.DateTimeField()
     course_id = models.IntegerField() # foreign key
     min_student = models.PositiveIntegerField(default=4)
     max_student = models.PositiveIntegerField(default=6)
@@ -21,7 +21,7 @@ class Survey(models.Model):
         return str(self.project_id) + ". " + self.project_name + " [" + str(self.course_id) + "]"
 
     class Meta:
-        db_table = "breakdown_project"
+        db_table = "project"
         verbose_name = "Survey"
         verbose_name_plural = "Surveys"
 
@@ -31,5 +31,6 @@ class Course(models.Model):
     name = models.CharField(max_length=20)
 
     class Meta:
+        db_table = "breakdown_course"
         verbose_name = "Course"
         verbose_name_plural = "Courses"

@@ -4,7 +4,7 @@ PROJECT_HAPPINESS = 10
 
 
 class Team(list):
-    project = None
+    topic_id = None
     __happiness_var = None
 
     def __init__(self, f=None):
@@ -12,7 +12,7 @@ class Team(list):
             super().__init__(f)
         else:
             super().__init__()
-        self.project = None
+        self.topic_id = None
         self.__happiness_var = None
 
     def __add__(self, record):
@@ -45,20 +45,20 @@ class Team(list):
 
             multiplier = 1
             for x in values.items():
-                if x[0].startswith("project"):
+                if x[0].startswith("topic"):
                     for f in x[1]:
                         stack[f] += PROJECT_HAPPINESS * multiplier
                 multiplier /= 2
             return stack
 
-    def assign_project(self):
+    def assign_topic(self):
             stack = self.__get_priority_stack()
             max_happiness, index = 0, 0
             for x in range(len(stack)):
                 if stack[x] > max_happiness:
                     max_happiness = stack[x]
                     index = x
-            self.project = index
+            self.topic_id = index
 
     def happiness(self):
         stack = self.__get_priority_stack()

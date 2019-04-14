@@ -10,13 +10,8 @@ clearable_tables = ["poll", "project", "team", "team_list",
                     "breakdown_course", "project_list", "course_list"]
 
 tables_with_pk = dict.fromkeys(["course", "credentials", "group_by",
-<<<<<<< HEAD
-                                "poll", "privilege", "topic",
-                                "study_group", "team", "user", "project"])
-=======
                                 "poll", "privilege", "topic", "project",
                                 "study_group", "team", "user"])
->>>>>>> bfa9dbe4e991ae692a53598ccdcf8c6f2d715be4
 
 class DbManager:
     db = None

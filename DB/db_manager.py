@@ -386,6 +386,12 @@ class DbManager:
         return team_id
 
     def get_projects(self):
+        """
+        Obtains all information about all projects
+        :return: projects info in form of list of dictionaries, where
+            keys correspond to column names of **project** table
+            values correspond to values from this table
+        """
         projects = self.db.query('select * from project')
         projects_dict = []
         for row in projects:

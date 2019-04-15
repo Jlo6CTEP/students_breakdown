@@ -1,0 +1,11 @@
+{'project_name': 'fuck_da_swp', 'course_id': None, 'min_student': None, 'max_student': None, 'group_by':
+None, 'description': 'lol', 'additional_info': 'kek', 'is_formed': False, 'due_date': datetime.datetime(2018, 4, 14, 20, 22, 48, 3
+48000)},
+
+{'project_name': 'swp_course', 'course_id': 3, 'min_student': 4, 'max_student': 6, 'group_by': 5, 'description': 'Lorem i
+psum dolor sit amet', 'additional_info': 'Aenean commodo ligula eget dolor. Aenean massa', 'is_formed': False, 'due_date': datetim
+e.datetime(2019, 4, 30, 12, 0, 0, 2000)}, {'project_name': 'fuck_da_life', 'course_id': 3, 'min_student': 4, 'max_student': 6, 'gr
+oup_by': 5, 'description': 'Life is sufferin and pain', 'additional_info': 'Students like sufferin', 'is_formed': True, 'due_date'
+: datetime.datetime(2019, 4, 14, 20, 25, 7, 519000)}, {'project_name': None, 'course_id': None, 'min_student': None, 'max_student'
+: None, 'group_by': None, 'description': 'lol2', 'additional_info': 'kek3', 'is_formed': False, 'due_date': datetime.datetime(2019
+, 8, 14, 21, 35, 46, 4000)}

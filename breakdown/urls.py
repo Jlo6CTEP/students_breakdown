@@ -1,8 +1,6 @@
 from django.urls import path
-from . import views
+from breakdown.views import survey, course
 
 urlpatterns = [
-    path('', views.names),
-    path('user/surveys', views.surveys)
-  
+    path('user/surveys', survey.get_list_of_surveys)
 ]

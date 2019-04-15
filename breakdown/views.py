@@ -1,9 +1,11 @@
 from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib.auth.models import User, Group
+from django.shortcuts import render
 
 from rest_framework import viewsets
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework import permissions
 
@@ -11,15 +13,6 @@ from .serializers import UserSerializer, SurveySerializer
 from .models import Survey
 
 from DB.db_manager import db
-
-
-def names(request):
-    return JsonResponse({'names': ['William', 'Rod', 'Grant']})
-
-
-def surveys(request):
-    print(request)
-    return Survey().get(request)
 
 
 # Create your views here
@@ -31,12 +24,17 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
-class Survey(APIView):
+class Survey(ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
-    def get(self, request):
+    def get_list_of_surveys(self, request):
         surveys = db.get_projects()
+
         serializer = SurveySerializer(surveys, many=True)
+        print("itself", serializer)
+        print("data", serializer.data)
+        print("doneeeeeeeeeer")
+
         res = JsonResponse({"data": serializer.data})
         return res
 
@@ -48,3 +46,7 @@ class Survey(APIView):
 class Course(APIView):
     """Комнаты чата"""
     permission_classes = [permissions.IsAuthenticated, ]
+
+
+survey = Survey()
+course = Course()

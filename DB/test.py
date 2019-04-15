@@ -2,22 +2,21 @@ from Alg.Algorithm import Algorithm
 from Alg.Solution import Solution
 from DB.db_manager import db
 
-a = Algorithm(15)
-print(a.do_the_magic())
-
-# db.register_user({"password": "lol", "mail": "fuck@fuck.gmail",
-#                  "name": "erg", "surname": "noor",
-#                  "study_group": ["bs17-2"], "username": "Jlobster",
-#                  "priv_name": "student"})
-# a = db.add_project({"description": "lol", "additional_info": "kek"})
-# print(a)
-# print(db.get_project_info(a))
-
-# r1 = db.get_student_poll(830, 3)
-# r2 = db.get_student_poll(831, 3)
-# r3 = db.get_student_poll(852, 3)
-# r4 = db.get_student_poll(853, 3)
-# r5 = db.get_student_poll(834, 3)
+print(db.get_team_members(15))
+print(db.get_student_polls(772, 15))
+print(db.get_project_teams(15))
+print(db.get_projects())
+print(db.get_project_info(15))
+a = db.get_team_members(15)
+print(a)
+a = db.get_project_polls(15)
+print(a[0].de_idfy())
+print()
+# r1 = db.get_student_polls(830, 15)[0]
+# r2 = db.get_student_polls(831, 15)[0]
+# r3 = db.get_student_polls(852, 15)[0]
+# r4 = db.get_student_polls(853, 15)[0]
+# r5 = db.get_student_polls(834, 15)[0]
 # r6 = db.get_student_poll(855, 3)
 # r7 = db.get_student_poll(836, 3)
 # r8 = db.get_student_poll(837, 3)
@@ -30,6 +29,8 @@ print(a.do_the_magic())
 # r15 = db.get_student_poll(845, 3)
 #
 # t1 = sum([r1, r2, r3, r4, r5])
+# t1.assign_topic()
+# print(db.create_team(3, t1))
 # t2 = sum([r6, r7, r8, r9, r10])
 # t3 = sum([r11, r12, r13, r14, r15])
 #

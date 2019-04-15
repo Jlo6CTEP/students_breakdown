@@ -32,7 +32,7 @@ class Algorithm:
             self.solution.add_team(sum(records[:x.name]))
             records = records[x.name - 1:]
         for x in self.solution:
-            x.assign_project()
+            x.assign_topic()
         print(self.solution.happiness())
         return self.solution
 

@@ -80,13 +80,13 @@ class DbManager:
         """
         if self.get_priority(user_id) != "ta":
             raise AssertionError("User is not a TA")
-        query = self.db.prepare("select * from project where project_id in "
+        query = self.db.prepare("select project_id from project where project_id in "
                                 "(select project_id from ta_project_list where user_id = $1)")(user_id)
         if len(query) == 0:
             return None
         projects = []
         for row in query:
-            projects.append({x[0]: x[1] for x in zip(self.project, row[1:])})
+            projects.append(self.get_project_info(row))
         return projects
 
     def create_new_project(self, user_id, project_info):
@@ -246,10 +246,7 @@ class DbManager:
             return None
         for row in query:
             d = Record({x[0]: x[1] for x in zip(self.poll, row[1:])})
-            d['course'] = d.pop('course_id')
-            d['course'] = self.db.prepare('select name from breakdown_course where course_id = $1')(d['course'])[0][0]
-            d['project'] = d.pop('project_id')
-            d['project'] = self.db.prepare('select project_name from project where project_id = $1')(d['project'])[0][0]
+            self.de_idfy(d)
             polls.append(d)
         return polls
 
@@ -347,7 +344,9 @@ class DbManager:
                                 '(select topic_id from project_topic_list where project_id = $1)')(project_id)
         teams_dict = []
         for row in teams:
-            teams_dict.append({x[0]: x[1] for x in zip(self.team, row[1:])})
+            d = {x[0]: x[1] for x in zip(self.team, row[1:])}
+            self.de_idfy(d)
+            teams_dict.append(d)
         return teams_dict
 
     def get_team_members(self, team_id):
@@ -389,7 +388,9 @@ class DbManager:
         projects = self.db.query('select * from project')
         projects_dict = []
         for row in projects:
-            projects_dict.append({x[0]: x[1] for x in zip(self.project, row[1:])})
+            d = {x[0]: x[1] for x in zip(self.project, row[1:])}
+            self.de_idfy(d)
+            projects_dict.append(d)
         return projects_dict
 
     def get_project_info(self, project_id):
@@ -401,7 +402,42 @@ class DbManager:
             values correspond to values from this table
         """
         project = self.db.prepare("select * from project where project_id = $1")(project_id)[0]
-        return {x[0]: x[1] for x in zip(self.project, project[1:])}
+        d = {x[0]: x[1] for x in zip(self.project, project[1:])}
+        self.de_idfy(d)
+        return d
+
+    def __de_idfy_course(self, course_dict):
+        if 'course_id' not in course_dict:
+            return
+        course = self.db.prepare("select name from breakdown_course where course_id=$1")(course_dict['course_id'])
+        course_dict['course_id'] = None if len(course) == 0 else course[0][0]
+
+    def __de_idfy_group_by(self, group_dict):
+        if 'group_by' not in group_dict:
+            return
+        group = self.db.prepare("select group_by.group_by from group_by where grouping_id=$1")(group_dict['group_by'])
+        group_dict['group_by'] = None if len(group) == 0 else group[0][0]
+
+    def __de_idfy_project(self, project_dict):
+        if 'project_id' not in project_dict:
+            return
+        group = self.db.prepare("select project_name from project where project_id=$1")(project_dict['project_id'])
+        project_dict['project_id'] = None if len(group) == 0 else group[0][0]
+
+    def __de_idfy_topics(self, topics_dict):
+        schema = {x[0]: x[1] for x in topics_dict.items() if x[0].startswith('topic')}
+        if len(schema) == 0:
+            return
+        line = "select topic_name from topic where topic_id in ({})".\
+            format(', '.join(['$'+str(x) for x in range(1, len(schema) + 1)]))
+        updater = {x[0]: x[1][0] for x in zip(schema.keys(), self.db.prepare(line)(*schema.values()))}
+        topics_dict.update(updater)
+
+    def de_idfy(self, dictionary):
+        self.__de_idfy_course(dictionary)
+        self.__de_idfy_group_by(dictionary)
+        self.__de_idfy_project(dictionary)
+        self.__de_idfy_topics(dictionary)
 
     def clear_db(self):
         """

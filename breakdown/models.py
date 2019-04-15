@@ -22,7 +22,7 @@ class Survey(models.Model):
     project_name = models.CharField(max_length=20)
     is_open = models.BooleanField(default=True)
     due_date = models.DateTimeField()
-    course_id = models.IntegerField()
+    course_id = models.CharField(max_length=64)
     min_student = models.PositiveIntegerField(default=4)
     max_student = models.PositiveIntegerField(default=6)
     group_by = models.IntegerField(choices=GROUP_BY_CHOICES)

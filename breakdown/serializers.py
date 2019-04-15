@@ -22,7 +22,7 @@ class SurveySerializer(serializers.ModelSerializer):
         model = Survey
         fields = (
             'project_id', 'project_name', 'due_date',
-            'course_id', 'min_student', 'max_student',
+            'course', 'min_student', 'max_student',
             'group_by', 'description', 'additional_info'
         )
 

@@ -29,7 +29,11 @@ class Survey(ListAPIView):
 
     def get_list_of_surveys(self, request):
         surveys = db.get_projects()
-
+        for entity in surveys:
+            x = entity["course_id"]
+            del entity["course_id"]
+            entity["course"] = x
+        print("surveys", surveys)
         serializer = SurveySerializer(surveys, many=True)
         print("itself", serializer)
         print("data", serializer.data)

@@ -1,7 +1,6 @@
-from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib.auth.models import User, Group
-from django.shortcuts import render
+from django.contrib.auth import authenticate, login
 
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -12,10 +11,27 @@ from rest_framework import permissions
 from .serializers import UserSerializer, SurveySerializer
 from .models import Survey
 
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+
 from DB.db_manager import db
 
 
-# Create your views here
+"""class Authentication(APIView):
+    def login(self, request):
+        print("!!!", request)
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+            else:
+                print("Error. Disabled account")
+        else:
+            print("invalid login")"""
+
+
 class UserViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited
@@ -30,13 +46,21 @@ class Survey(ListAPIView):
     def get_list_of_surveys(self, request):
         surveys = db.get_projects()
 
-        print("surveys", surveys)
         serializer = SurveySerializer(surveys, many=True)
-        print("itself", serializer)
-        print("data", serializer.data)
-        print("doneeeeeeeeeer")
+        json_string = serializer.data
 
-        res = JsonResponse({"data": serializer.data})
+        """
+        for survey in surveys:
+           survey["due_date"] = str(survey["due_date"])
+        surveys = [surveys[0]]
+        json_string = json.dumps(
+            surveys,
+            sort_keys=True,
+            indent=1,
+            cls=DjangoJSONEncoder
+        )
+        print(json_string)"""
+        res = JsonResponse({"data": json_string})
         return res
 
     def post(self, request):
@@ -51,3 +75,4 @@ class Course(APIView):
 
 survey = Survey()
 course = Course()
+# authentication = Authentication()

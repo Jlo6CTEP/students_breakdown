@@ -3,10 +3,10 @@ from .models import Survey, Course
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_filter = ('course_id', 'is_open')
+    list_filter = ('course_id', 'is_formed', 'due_date')
     list_display = (
         'project_id', 'project_name',
-        'is_open',
+        'is_formed',
         'due_date',
         'course_id',
         'min_student', 'max_student',

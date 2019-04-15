@@ -2,6 +2,8 @@ from Alg.Algorithm import Algorithm
 from Alg.Solution import Solution
 from DB.db_manager import db
 
+
+"""Db manager"""
 print(db.get_team_members(15))
 print(db.get_student_polls(772, 15))
 print(db.get_project_teams(15))
@@ -10,8 +12,14 @@ print(db.get_project_info(15))
 a = db.get_team_members(15)
 print(a)
 a = db.get_project_polls(15)
+print(a)
 print(a[0].de_idfy())
 print()
+
+"""Algorithm"""
+# a = Algorithm(15)
+# print(a.do_the_magic())
+
 # r1 = db.get_student_polls(830, 15)[0]
 # r2 = db.get_student_polls(831, 15)[0]
 # r3 = db.get_student_polls(852, 15)[0]

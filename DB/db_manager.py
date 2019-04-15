@@ -417,6 +417,7 @@ class DbManager:
             return
         course = self.db.prepare("select name from breakdown_course where course_id=$1")(course_dict['course_id'])
         course_dict['course_id'] = None if len(course) == 0 else course[0][0]
+        course_dict['course'] = course_dict.pop('course_id')
 
     def __de_idfy_group_by(self, group_dict):
         if 'group_by' not in group_dict:
@@ -429,6 +430,7 @@ class DbManager:
             return
         group = self.db.prepare("select project_name from project where project_id=$1")(project_dict['project_id'])
         project_dict['project_id'] = None if len(group) == 0 else group[0][0]
+        project_dict['project'] = project_dict.pop('project_id')
 
     def __de_idfy_topics(self, topics_dict):
         schema = {x[0]: x[1] for x in topics_dict.items() if x[0].startswith('topic')}

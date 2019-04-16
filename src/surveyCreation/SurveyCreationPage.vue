@@ -65,10 +65,10 @@
 </template>
 
 <script>
-    import { getProject, saveProject } from "./survey";
+  import {getProject, saveProject} from "./survey";
 
 
-    export default {
+  export default {
         //name: "projects",
         prj:[],
         data() {

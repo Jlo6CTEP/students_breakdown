@@ -9,6 +9,10 @@ import VeeValidate from 'vee-validate';
 // setup fake backend
 import {configureFakeBackend} from './_helpers';
 
+if (process.env.NODE_ENV !== 'production') {
+  console.log('Looks like we are in development mode!');
+}
+
 Vue.use(VueHead);
 Vue.use(VeeValidate);
 Vue.config.productionTip = false;

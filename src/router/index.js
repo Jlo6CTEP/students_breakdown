@@ -1,8 +1,11 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from "../components/Main";
+import Main from "../components/Main";
 import LoginPage from "../components/LoginPage";
 import RegisterPage from "../components/RegisterPage";
+import Account from "../components/Account";
+import News from "../components/News";
+import NotFound from "../components/NotFound";
 
 Vue.use(Router);
 
@@ -18,15 +21,25 @@ export const router = new Router({
       name: 'Register',
       component: RegisterPage
     }, {
+      path: '/account',
+      name: 'Account',
+      component: Account
+    },
+    {
+      path: '/news',
+      name: 'News',
+      component: News
+    },
+    {
       path: '/',
-      name: 'Home',
-      component: Home
+      name: 'Main',
+      component: Main
     },
 
-    // otherwise redirect to home
+    // otherwise redirect to not found page
     {
       path: '*',
-      redirect: Home
+      component: NotFound
     }
   ]
 });

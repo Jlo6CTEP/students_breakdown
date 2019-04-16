@@ -1,20 +1,26 @@
 <template>
   <div id="app">
+    <template v-if="!is_login_page">
+      <Header/>
+    </template>
+
     <div class="jumbotron">
       <div class="container">
-        <div class="row">
-          <div class="col-sm-6 offset-sm-3">
-            <div :class="`alert ${alert.type}`" v-if="alert.message">{{alert.message}}</div>
-            <router-view/>
-          </div>
-        </div>
+        <div :class="`alert ${alert.type}`" v-if="alert.message">{{alert.message}}</div>
+        <router-view/>
       </div>
     </div>
+
+    <template v-if="!is_login_page">
+      <Footer/>
+    </template>
   </div>
 </template>
 
 <script>
   import {mapActions, mapState} from 'vuex'
+  import header from './components/Header'
+  import footer from './components/Footer'
 
   export default {
     name: 'App',
@@ -35,8 +41,8 @@
       ...mapState({
         alert: state => state.alert
       }),
-      is_hidden() {
-        return this.$route.path !== '/login' && this.$route.path !== '/register'
+      is_login_page() {
+        return this.$route.path === '/login' || this.$route.path === '/register'
       }
     },
     methods: {
@@ -50,6 +56,10 @@
         this.clearAlert();
       }
     },
+    components: {
+      Header: header,
+      Footer: footer,
+    }
   }
 </script>
 
@@ -58,8 +68,6 @@
     font-family: 'Avenir', Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-align: center;
     color: #2c3e50;
-    margin-top: 60px;
   }
 </style>

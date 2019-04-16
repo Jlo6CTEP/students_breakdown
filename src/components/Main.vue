@@ -63,7 +63,7 @@
       axios
         .get(process.env.API_URL + '/user/surveys')
         .then(response => {
-          this.surveys = response
+          this.surveys = response.data.data
         })
         .catch(error => {
           console.log(error);
@@ -92,7 +92,7 @@
       computedSurveys: function () {
         let vm = this;
         console.log(this.surveys);
-        return this.surveys.data.data.filter(function (item) {
+        return this.surveys.filter(function (item) {
           let contain_in_name = item.project_name.toLowerCase().indexOf(vm.query.toLowerCase()) !== -1;
           let contain_in_course = item.course.toLowerCase().indexOf(vm.query.toLowerCase()) !== -1;
           return contain_in_name || contain_in_course;

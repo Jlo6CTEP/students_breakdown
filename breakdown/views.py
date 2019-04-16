@@ -1,44 +1,60 @@
-from django.core.checks import messages
 from django.http import JsonResponse
-from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
+from django.http.request import HttpRequest
+from django.views.decorators.csrf import csrf_exempt
 
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
-from rest_framework import permissions
-
-from .serializers import UserSerializer, SurveySerializer
-from .models import Survey
+from rest_framework.decorators import api_view, permission_classes
 
 import json
-from django.core.serializers.json import DjangoJSONEncoder
+
+from .models import Survey
+from .serializers import UserSerializer, SurveySerializer
+
 
 from DB.db_manager import db
 
 
-class Authentication(APIView):
-    @api_view(['GET', 'POST', ])
-    def sign_in(self, request):
-        print("!!!!!", type(request))
-        try:
-            username = request.GET['username']
-            password = request.GET['password']
-        except KeyError:
-            username = "testuser"
-            password = "7ujm-UJM"
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            if user.is_active:
-                messages.success(request._request, "Success")
-                login(request, user)
-            else:
-                print("Error. Disabled account")
+def test(request):
+    print(request.method)
+    return sign_in(request)
+
+
+# @csrf_exempt
+@api_view(['GET', 'POST', ])
+@permission_classes((permissions.AllowAny,))
+def sign_in(request):
+    print("qwe")
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+    username = body['username']
+    password = body['password']
+    print(username, password)
+
+    user = authenticate(username=username, password=password)
+    print("authenticated")
+    if user is not None:
+        if user.is_active:
+            # messages.success(request._request, "Success")
+            login(request, user)
+            res = JsonResponse({"data": "1"})
+            return Response("Success", status=HTTP_STATUS_OK)
         else:
-            print("invalid login")
-        return Response(status=200)
+            print("Error. Disabled account")
+            return Response("Disabled account", status=410)
+    else:
+        print("invalid login")
+        return Response("Invalid login", status=400)
+    return Response(status=HTTP_STATUS_OK)
+
+
+class Authentication(APIView):
+    pass
+
 
 
 

@@ -17,7 +17,7 @@ Vue.use(VueHead);
 Vue.use(VeeValidate);
 Vue.config.productionTip = false;
 
-configureFakeBackend();
+//configureFakeBackend();
 
 /* eslint-disable no-new */
 new Vue({

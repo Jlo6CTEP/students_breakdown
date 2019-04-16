@@ -16,9 +16,10 @@ function login(username, password) {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({username, password})
+    // data: {csrfmiddlewaretoken: getCookie('csrftoken')}
   };
-
-  return fetch(`${config.apiUrl}/users/authenticate`, requestOptions)
+  console.log(requestOptions);
+  return fetch(`http://127.0.0.1:8000/users/authenticate`, requestOptions)
     .then(handleResponse)
     .then(user => {
       // login successful if there's a jwt token in the response
@@ -26,8 +27,6 @@ function login(username, password) {
         // store user details and jwt token in local storage to keep user logged in between page refreshes
         localStorage.setItem('user', JSON.stringify(user));
       }
-
-
       return user;
     });
 }

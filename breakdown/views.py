@@ -55,7 +55,7 @@ class Survey(ListAPIView):
 
     def get_list_of_surveys(self, request):
         surveys = db.get_projects()
-
+        print(surveys)
         serializer = SurveySerializer(surveys, many=True)
         json_string = serializer.data
 

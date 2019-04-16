@@ -51,7 +51,7 @@
     computed: {
       due_date_format() {
         let convert_date = new Date(this.due_date);
-        return convert_date.getDate() + '-' + convert_date.getMonth() + '-' + convert_date.getFullYear();
+        return convert_date.getDate() + '-' + (convert_date.getMonth() + 1) + '-' + convert_date.getFullYear();
       }
     },
     methods: {

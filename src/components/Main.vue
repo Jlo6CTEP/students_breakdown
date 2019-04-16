@@ -91,7 +91,8 @@
       },
       computedSurveys: function () {
         let vm = this;
-        return this.surveys.filter(function (item) {
+        console.log(this.surveys);
+        return this.surveys.data.data.filter(function (item) {
           let contain_in_name = item.project_name.toLowerCase().indexOf(vm.query.toLowerCase()) !== -1;
           let contain_in_course = item.course.toLowerCase().indexOf(vm.query.toLowerCase()) !== -1;
           return contain_in_name || contain_in_course;

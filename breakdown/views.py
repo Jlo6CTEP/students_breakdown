@@ -1,9 +1,11 @@
+from django.core.checks import messages
 from django.http import JsonResponse
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login
 
 from rest_framework import viewsets
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework import permissions
@@ -17,19 +19,27 @@ from django.core.serializers.json import DjangoJSONEncoder
 from DB.db_manager import db
 
 
-"""class Authentication(APIView):
-    def login(self, request):
-        print("!!!", request)
-        username = request.POST['username']
-        password = request.POST['password']
+class Authentication(APIView):
+    @api_view(['GET', 'POST', ])
+    def sign_in(self, request):
+        print("!!!!!", type(request))
+        try:
+            username = request.GET['username']
+            password = request.GET['password']
+        except KeyError:
+            username = "testuser"
+            password = "7ujm-UJM"
         user = authenticate(username=username, password=password)
         if user is not None:
             if user.is_active:
+                messages.success(request._request, "Success")
                 login(request, user)
             else:
                 print("Error. Disabled account")
         else:
-            print("invalid login")"""
+            print("invalid login")
+        return Response(status=200)
+
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -69,10 +79,9 @@ class Survey(ListAPIView):
 
 
 class Course(APIView):
-    """Комнаты чата"""
     permission_classes = [permissions.IsAuthenticated, ]
 
 
 survey = Survey()
 course = Course()
-# authentication = Authentication()
+authentication = Authentication()

@@ -1,38 +1,38 @@
 <template>
-  <div>
-    <h2>Register</h2>
-    <form @submit.prevent="handleSubmit">
+  <div class="text-center" data-gr-c-s-loaded="true">
+    <!--    <h2>Register</h2>-->
+    <form @submit.prevent="handleSubmit" class="form-signin">
+      <img alt="" class="mb-4" height="72" src="../assets/owl.svg"
+           width="72">
       <div class="form-group">
-        <label for="firstName">First Name
-          <input :class="{ 'is-invalid': submitted && errors.has('firstName') }" class="form-control"
-                 name="firstName" type="text" v-model="user.firstName" v-validate="'required'"/>
-          <div class="invalid-feedback" v-if="submitted && errors.has('firstName')">{{ errors.first('firstName') }}
-          </div>
-        </label>
+        <label for="firstName">First Name</label>
+        <input :class="{ 'is-invalid': submitted && errors.has('firstName') }" class="form-control"
+               name="firstName" placeholder="Ex. Ivan" type="text" v-model="user.firstName" v-validate="'required'"/>
+        <div class="invalid-feedback" v-if="submitted && errors.has('firstName')">{{ errors.first('firstName') }}
+        </div>
       </div>
       <div class="form-group">
-        <label for="lastName">Last Name
+        <label for="lastName">Last Name</label>
           <input :class="{ 'is-invalid': submitted && errors.has('lastName') }" class="form-control"
-                 name="lastName" type="text" v-model="user.lastName" v-validate="'required'"/>
+                 name="lastName" placeholder="Ex. Ivanov" type="text" v-model="user.lastName" v-validate="'required'"/>
           <div class="invalid-feedback" v-if="submitted && errors.has('lastName')">{{ errors.first('lastName') }}
           </div>
-        </label>
       </div>
       <div class="form-group">
-        <label for="username">Username
+        <label for="username">Username</label>
           <input :class="{ 'is-invalid': submitted && errors.has('username') }" class="form-control"
-                 name="username" type="text" v-model="user.username" v-validate="'required'"/>
+                 name="username" placeholder="Ex. i.ivanov@innopolis.ru" type="text" v-model="user.username"
+                 v-validate="'required'"/>
           <div class="invalid-feedback" v-if="submitted && errors.has('username')">{{ errors.first('username') }}
           </div>
-        </label>
       </div>
       <div class="form-group">
-        <label htmlFor="password">Password
+        <label htmlFor="password">Password</label>
           <input :class="{ 'is-invalid': submitted && errors.has('password') }" class="form-control"
-                 name="password" type="password" v-model="user.password" v-validate="{ required: true, min: 6 }"/>
+                 name="password" placeholder="Password" type="password" v-model="user.password"
+                 v-validate="{ required: true, min: 6 }"/>
           <div class="invalid-feedback" v-if="submitted && errors.has('password')">{{ errors.first('password') }}
           </div>
-        </label>
       </div>
       <div class="form-group">
         <button :disabled="status.registering" class="btn btn-primary">Register</button>
@@ -42,6 +42,7 @@
         <router-link class="btn btn-link" to="/login">Cancel</router-link>
       </div>
     </form>
+    <p class="mt-5 mb-3 text-muted">Students breakdown team</p>
   </div>
 </template>
 
@@ -76,3 +77,20 @@
     }
   };
 </script>
+
+
+<style scoped>
+  .form-signin {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+
+  }
+
+  *, ::after, ::before {
+
+    box-sizing: border-box;
+
+  }
+</style>

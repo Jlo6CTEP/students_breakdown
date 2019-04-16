@@ -1,19 +1,26 @@
 <template>
-  <div>
-    <h2>Login</h2>
-    <form @submit.prevent="handleSubmit">
+  <div class="text-center" data-gr-c-s-loaded="true">
+    <form @submit.prevent="handleSubmit" class="form-signin">
+      <img alt="" class="mb-4" height="72" src="../assets/owl.svg"
+           width="72">
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="username">Email</label>
         <input :class="{ 'is-invalid': submitted && !username }" class="form-control" name="username" type="text"
-               v-model="username"/>
+               autofocus="" placeholder="Email address" v-model="username"/>
         <div class="invalid-feedback" v-show="submitted && !username">Username is required</div>
       </div>
       <div class="form-group">
         <label htmlFor="password">Password</label>
         <input :class="{ 'is-invalid': submitted && !password }" class="form-control" name="password" type="password"
-               v-model="password"/>
+               placeholder="Password" v-model="password"/>
         <div class="invalid-feedback" v-show="submitted && !password">Password is required</div>
       </div>
+      <div class="checkbox mb-3">
+        <label>
+          <input type="checkbox" value="remember-me"> Remember me
+        </label>
+      </div>
+
       <div class="form-group">
         <button :disabled="status.loggingIn" class="btn btn-primary">Login</button>
         <img
@@ -22,6 +29,7 @@
         <router-link class="btn btn-link" to="/register">Register</router-link>
       </div>
     </form>
+    <p class="mt-5 mb-3 text-muted">Students breakdown team</p>
   </div>
 </template>
 
@@ -55,3 +63,19 @@
     }
   };
 </script>
+
+<style scoped>
+  .form-signin {
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+
+  }
+
+  *, ::after, ::before {
+
+    box-sizing: border-box;
+
+  }
+</style>

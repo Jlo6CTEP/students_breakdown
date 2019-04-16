@@ -1,32 +1,41 @@
-from DB.db_manager import *
+from copy import deepcopy
 
-
-def normalizing_vector():
-    return list(map(lambda x: MAX_GRADE / x, db.max_ids))
+from DB.db_manager import db
 
 
 class Record(dict):
-    student_id = None
-    name = None
-    surname = None
-    email = None
-    password = None
+    user_id = None
 
     # record is dictionary of parameter : value pairs
-    def __init__(self, name, surname, email, password, record=None,  sid=None):
-        self.student_id = sid
-        self.name = name
-        self.surname = surname
-        self.email = email
-        self.password = password
-        # will raise an exception in case of incorrect input schema
-        if record is not None:
-            for x in SHORT_SCHEMA:
-                f = record[x]
-            super().__init__(record)
+    def __init__(self, d=None, user_id=None):
+        self.user_id = user_id
+        if d:
+            self.user_id = d.pop("user_id") if user_id is None else user_id
+            super().__init__(d)
         else:
-            super().__init__({x: None for x in SHORT_SCHEMA})
+            super().__init__()
 
-    def normalize(self):
-        [self.update({x[0]: round(self[x[0]] * x[1]) if self[x[0]] is not None else 0}) for x in
-         zip(self.keys(), normalizing_vector())]
+    def poll_info(self):
+        return {x[0]: self[x[0]] for x in db.poll}
+
+    def personal_info(self):
+        return {x[0]: self[x[0]] for x in set(self) - set(db.poll)}
+
+    def de_idfy(self):
+        new = deepcopy(self)
+        db.de_idfy(new)
+        return Record(new, self.user_id)
+
+    def __add__(self, record):
+        if isinstance(record, Record):
+            from Alg.Team import Team
+            t = Team() + self + record
+            return t
+        else:
+            raise ValueError("incorrect addend type : {}".format(type(record)))
+
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        else:
+            return self + other

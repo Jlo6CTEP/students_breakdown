@@ -7,7 +7,7 @@ import Account from "../components/Account";
 import News from "../components/News";
 import NotFound from "../components/NotFound";
 
-Vue.use(Router);
+Vue.use(Router)
 
 export const router = new Router({
   mode: 'history',

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'breakdown.apps.BreakdownConfig',
 ]
 
@@ -52,10 +53,15 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'students_breakdown.urls'
 
+STATICFILES_DIRS = [
+  os.path.join(BASE_DIR, 'dist/static'),
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': [os.path.join(BASE_DIR, 'templates'),
+                 os.path.join(BASE_DIR, 'dist')]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -71,14 +77,28 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'students_breakdown.wsgi.application'
 
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
+
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'zpgkwdlt',
+        'USER': 'zpgkwdlt',
+        'PASSWORD': 'M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy',
+        'HOST': 'dumbo.db.elephantsql.com',
+        'PORT': '5432',
     }
 }
 
@@ -107,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 

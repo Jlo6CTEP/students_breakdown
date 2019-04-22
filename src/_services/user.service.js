@@ -1,5 +1,4 @@
 import config from 'config';
-import jQuery from 'jquery';
 import {authHeader} from '../_helpers';
 
 export const userService = {
@@ -12,28 +11,13 @@ export const userService = {
   delete: _delete
 };
 
-function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
 
 function login(username, password) {
   const requestOptions = {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({username, password}),
-    data: {csrfmiddlewaretoken: getCookie('csrftoken')}
+    // data: {csrfmiddlewaretoken: getCookie('csrftoken')}
     // data: {csrfmiddlewaretoken:  Cookies.get('csrftoken')}
   };
   console.log(requestOptions);

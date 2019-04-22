@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.conf.urls import url
 from django.urls import include, path
 from django.views.generic import TemplateView
+from django.contrib.auth import views as auth_views
 
 
 """# Routers provide an easy way of automatically determining the URL conf.
@@ -28,9 +29,9 @@ router.register(r'users', UserViewSet"""
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('', include(router.urls)),
     url(r'^$', TemplateView.as_view(template_name='index.html')),
     # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api-auth/', include('rest_framework.urls')),
+    # path('api-auth/', include('rest_framework.urls')),
     path('', include('breakdown.urls')),
+    # url(r'^accounts/', include('django.contrib.auth.urls')),
 ]

@@ -1,9 +1,6 @@
 # Students Breakdown project
-2nd year course project JlobCTEP's personal branch.
 
-### This branch is mostly about DB and Algorithm
-***********************************
-If you are not JlobCTEP (if you have to read this, you are obviously not) dont touch this lovely pile of shit.
-
-Otherwise you're gonna stink AF.
-***********************************
+###How to run?
+1. Write `npm run build` in console
+2. Write `python manage.py runserver` in console
+3. Open http://127.0.0.1:8000/ 

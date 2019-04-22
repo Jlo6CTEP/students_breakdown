@@ -1,14 +1,20 @@
 from django.http import JsonResponse
+from django.contrib import auth
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.http.request import HttpRequest
-from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.authtoken.models import Token
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
 from .serializers import UserSerializer
+
+
+from DB.db_manager import db
 
 
 import json
@@ -20,35 +26,47 @@ from .serializers import UserSerializer, SurveySerializer
 from DB.db_manager import db
 
 
-# @csrf_exempt
-@csrf_exempt
-@requires_csrf_token
 @api_view(['GET', 'POST', ])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((permissions.AllowAny,))
-def sign_in(request):
-    print("qwe")
+def login(request):
+    print("Entered to sign in view")
+    print(request.body)
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
+
     username = body['username']
     password = body['password']
+
     print(username, password)
 
     user = authenticate(username=username, password=password)
     print("authenticated")
     if user is not None:
-        print(user.is_active)
         if user.is_active:
             # messages.success(request._request, "Success")
             login(request, user)
-            res = JsonResponse({"data": "1"})
-            return Response(res, status=200)
+            res = db.check_credentials(username, password)
+            print(res)
+            token = Token.objects.create(user=res["id"])
+            print(token)
+            # res["token"] = token
+            return JsonResponse(res, status=200)
         else:
             print("Error. Disabled account")
             return Response("Disabled account", status=410)
     else:
-        print("invalid login")
+        print("Error. Invalid login")
         return Response("Invalid login", status=400)
-    return Response(status=HTTP_STATUS_OK)
+
+
+@api_view(['GET', 'POST', ])
+@authentication_classes((SessionAuthentication, BasicAuthentication))
+@permission_classes((permissions.IsAuthenticated,))
+def logout(request):
+    auth.logout(request)
+    # Перенаправление на страницу.
+    return Response(status=400)
 
 
 class UserList(generics.ListAPIView):

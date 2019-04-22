@@ -7,7 +7,7 @@ import VueHead from 'vue-head'
 import {store} from './_store'
 import VeeValidate from 'vee-validate';
 // setup fake backend
-import {configureFakeBackend} from './_helpers';
+// import {configureFakeBackend} from './_helpers';
 
 if (process.env.NODE_ENV !== 'production') {
   console.log('Looks like we are in development mode!');

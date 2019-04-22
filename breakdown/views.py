@@ -2,13 +2,14 @@ from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.http.request import HttpRequest
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status, generics
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from .serializers import UserSerializer
+
 
 import json
 
@@ -19,12 +20,9 @@ from .serializers import UserSerializer, SurveySerializer
 from DB.db_manager import db
 
 
-def test(request):
-    print(request.method)
-    return sign_in(request)
-
-
 # @csrf_exempt
+@csrf_exempt
+@requires_csrf_token
 @api_view(['GET', 'POST', ])
 @permission_classes((permissions.AllowAny,))
 def sign_in(request):
@@ -38,11 +36,12 @@ def sign_in(request):
     user = authenticate(username=username, password=password)
     print("authenticated")
     if user is not None:
+        print(user.is_active)
         if user.is_active:
             # messages.success(request._request, "Success")
             login(request, user)
             res = JsonResponse({"data": "1"})
-            return Response("Success", status=HTTP_STATUS_OK)
+            return Response(res, status=200)
         else:
             print("Error. Disabled account")
             return Response("Disabled account", status=410)
@@ -52,9 +51,14 @@ def sign_in(request):
     return Response(status=HTTP_STATUS_OK)
 
 
-class Authentication(APIView):
-    pass
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 
@@ -66,7 +70,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
-class Survey(ListAPIView):
+class Survey(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
     def get_list_of_surveys(self, request):
@@ -100,4 +104,3 @@ class Course(APIView):
 
 survey = Survey()
 course = Course()
-authentication = Authentication()

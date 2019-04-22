@@ -16,12 +16,23 @@ export const router = new Router({
       path: '/login',
       name: 'Login',
       component: LoginPage
-    }, {
+    },
+    {
+      path: '/api-auth/login',
+      name: 'Login',
+      component: LoginPage
+    },
+    {
       path: '/register',
       name: 'Register',
       component: RegisterPage
-    }, {
+    }, /*{
       path: '/account',
+      name: 'Account',
+      component: Account
+    },*/
+    {
+      path: '/accounts/profile/',
       name: 'Account',
       component: Account
     },

@@ -1,8 +1,8 @@
 <template>
   <div>
     <h1>Hi dear user!</h1>
-    <h2>You logged-in as {{account.user.firstName}} {{account.user.lastName}}</h2>
-    <h2>Email: {{account.user.username}}</h2>
+    <h2>You logged-in as {{account.user.first_name}} {{account.user.last_name}}</h2>
+    <h2>Username: {{account.user.username}}</h2>
     <!--    <h3>Users from secure api end point:</h3>-->
     <!--    <em v-if="users.loading">Loading users...</em>-->
     <!--    <span v-if="users.error" class="text-danger">ERROR: {{users.error}}</span>-->
@@ -41,4 +41,5 @@
       })
     }
   };
+  //console.log(account);
 </script>

@@ -28,6 +28,7 @@ function login(username, password) {
       // login successful if there's a jwt token in the response
       if (user.token) {
         // store user details and jwt token in local storage to keep user logged in between page refreshes
+        console.log(user);
         localStorage.setItem('user', JSON.stringify(user));
       }
       return user;
@@ -43,9 +44,10 @@ function register(user) {
   const requestOptions = {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(user)
+    body: JSON.stringify(user),
   };
-  return fetch(`${config.apiUrl}/users/register`, requestOptions).then(handleResponse);
+  return fetch(`http://127.0.0.1:8000/users/register`, requestOptions)
+      .then(handleResponse);
 }
 
 function getAll() {

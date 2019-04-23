@@ -279,7 +279,6 @@ class DbManager:
         res = self.db.prepare("select id, username, first_name, last_name from auth_user where username = $1")(username)[0]
         columns = ("id", "username", "first_name", "last_name")
         ans = {x[0]: x[1] for x in zip(columns, res)}
-        ans['token'] = "fake_token"
 
         print(ans)
         return ans

@@ -1,10 +1,11 @@
-from django import forms
+import json
+
 from django.http import JsonResponse
 from django.contrib import auth
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth.models import User
-from django.shortcuts import render_to_response
+from django.db.utils import IntegrityError as DjangoIntegrityError
 from django.contrib.auth.forms import UserCreationForm
 
 
@@ -16,110 +17,82 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 
-
-from .serializers import UserSerializer
-
-
-from DB.db_manager import db
-
-
-import json
-
 from .models import Survey
-from .serializers import UserSerializer, SurveySerializer
-
-
 from DB.db_manager import db
+from .serializers import UserSerializer, SurveySerializer
 
 
 @api_view(['POST', ])
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((permissions.AllowAny,))
 def login(request):
-    print("Entered to sign in view")
     print(request.body)
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
 
     username = body['username']
     password = body['password']
-
-    print(username, password)
-
     user = authenticate(username=username, password=password)
-    print("authenticated")
+
     if user is not None:
         if user.is_active:
-            print("active")
-            # messages.success(request._request, "Success")
             django_login(request, user)
             res = db.check_credentials(username, password)
-            print(res)
-            # token = Token.objects.create(user=res["id"])
-            # print(token)
-            # res["token"] = token
-            return JsonResponse(res, status=200)
+            if not res:
+                return Response("Wrong login or password", status=status.HTTP_400_BAD_REQUEST)
+            token, created = Token.objects.get_or_create(user=user)
+            res["token"] = token.key
+            print(res, token)
+            return JsonResponse(res, status=status.HTTP_200_OK)
         else:
-            print("Error. Disabled account")
-            return Response("Disabled account", status=410)
+            return Response("Inactive account", status=status.HTTP_410_GONE)
     else:
-        print("Error. Invalid login")
-        return Response("Invalid login", status=400)
+        return Response("Invalid login", status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET',])
+@api_view(['GET', ])
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((permissions.IsAuthenticated,))
 def logout(request):
     auth.logout(request)
     # Перенаправление на страницу.
-    return Response(status=400)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST', ])
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((permissions.AllowAny,))
 def register(request):
-    print("qwe")
-    """data = request.POST
-    form = UserCreationForm(data=data or None)
-
-    if request.method == 'POST': #  and form.is_valid()
-        # form.save()
-        errors = form.errors
-        if not errors:
-            new_user = form.save(data)
-            print("new_user", new_user)
-            print(new_user)
-            return JsonResponse(new_user, status=200)
-    else:
-        data, errors = {}, {}
-    res = dict(zip(["form", "data", "errors"], [form, data, errors]))
-    print(res)
-    return JsonResponse(res, status=200)"""
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
-        print("IS VALID", form.is_valid())
-        if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
-            login(request, user)
-            print(user.id)
+        if True or form.is_valid():
+            body_unicode = request.body.decode('utf-8')
+            body = json.loads(body_unicode)
+            username = body['username']
+            password = body['password']
+            first_name = body['firstName']
+            last_name = body['lastName']
+            try:
+                user = User.objects.create_user(username=username,
+                                                email=username,
+                                                password=password,
+                                                first_name=first_name,
+                                                last_name=last_name)
+            except DjangoIntegrityError:
+                return Response("User already exists", status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             res = dict(zip(["id", "username"], [user.id, user.get_username()]))
-            return JsonResponse(res, status=200, safe=False)
+            return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
     else:
         form = UserCreationForm()
-    return JsonResponse({'form': form}, status=405)
+        return Response("Method is not POST", status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(['GET', 'POST', ])
 @authentication_classes((SessionAuthentication, BasicAuthentication))
 @permission_classes((permissions.IsAuthenticatedOrReadOnly,))
 def account(request):
-    print(123)
-    return Response(status=202)
+    return Response(status=status.HTTP_202_ACCEPTED)
 
 
 class UserList(generics.ListAPIView):
@@ -130,7 +103,6 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -144,7 +116,8 @@ class UserViewSet(viewsets.ModelViewSet):
 class Survey(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
-    def get_list_of_surveys(self, request):
+    @staticmethod
+    def get_list_of_surveys(request):
         surveys = db.get_projects()
         print(surveys)
         serializer = SurveySerializer(surveys, many=True)
@@ -164,9 +137,10 @@ class Survey(generics.ListAPIView):
         res = JsonResponse({"data": json_string})
         return res
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         Survey.objects.create()
-        return Response(status=201)
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class Course(APIView):

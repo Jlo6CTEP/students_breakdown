@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'rest_framework',
+    'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,8 +42,6 @@ INSTALLED_APPS = [
     'breakdown.apps.BreakdownConfig',
     'corsheaders'
 ]
-
-CORS_ORIGIN_WHITELIST = ('localhost:8080', )
 
 MIDDLEWARE = [
     # 'django.middleware.csrf.CsrfViewMiddleware',
@@ -89,8 +88,6 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-        # 'rest_framework.permissions.IsAuthenticated',
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -154,6 +151,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
-# !!!!!This is for demonstration only!!!!!
-#AUTHENTICATION_BACKENDS = ['breakdown.api.auth.AlwaysRootBackend']

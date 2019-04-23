@@ -33,14 +33,7 @@ class Survey(models.Model):
     def __str__(self):
         return str(self.project_id) + ". " + self.project_name + " [" + str(self.course_id) + "]"
 
-    #@property
-    #def course_name(self):
-    #    return self.course_id.name
-
     class Meta:
         db_table = "project"
         verbose_name = "Survey"
         verbose_name_plural = "Surveys"
-
-
-

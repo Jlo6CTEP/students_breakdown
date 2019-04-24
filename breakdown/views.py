@@ -117,23 +117,12 @@ class Survey(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
     @staticmethod
-    def get_list_of_surveys(request):
+    def get_list_of_surveys(request, user_id=None):
+        print(user_id)
         surveys = db.get_projects()
         print(surveys)
         serializer = SurveySerializer(surveys, many=True)
         json_string = serializer.data
-
-        """
-        for survey in surveys:
-           survey["due_date"] = str(survey["due_date"])
-        surveys = [surveys[0]]
-        json_string = json.dumps(
-            surveys,
-            sort_keys=True,
-            indent=1,
-            cls=DjangoJSONEncoder
-        )
-        print(json_string)"""
         res = JsonResponse({"data": json_string})
         return res
 

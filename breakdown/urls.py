@@ -4,6 +4,7 @@ from breakdown.views import survey, login, account, register,\
 
 
 urlpatterns = [
+    path('user/surveys/<int:user_id>', survey.get_list_of_surveys),
     path('user/surveys', survey.get_list_of_surveys),
 
     path('users/authenticate', login),

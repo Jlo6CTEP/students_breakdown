@@ -2,8 +2,7 @@ import hashlib
 import postgresql
 from itertools import chain
 from postgresql.exceptions import WrongObjectTypeError
-from passlib.hash import pbkdf2_sha256
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import check_password
 
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 
@@ -279,10 +278,7 @@ class DbManager:
         res = self.db.prepare("select id, username, first_name, last_name from auth_user where username = $1")(username)[0]
         columns = ("id", "username", "first_name", "last_name")
         ans = {x[0]: x[1] for x in zip(columns, res)}
-
-        print(ans)
         return ans
-
 
     def register_user(self, registration_info):
         """

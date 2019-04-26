@@ -91,11 +91,13 @@ class DbManager:
 
     def create_new_project(self, user_id, project_info):
         """
-        Creates new project with given initial infirmation
+        Creates new project with given initial information
         :param user_id: id of TA who creates the project
         :param project_info: info about project in a dictionary form, where
             keys correspond to column names of **project** table
             values correspond to values to be inserted
+            plus this key and value
+            groups : [list_of_groups]
         :return: id of newly created project
         :raises Various DB exceptions in case of incorrect input
         """
@@ -108,6 +110,9 @@ class DbManager:
                        ', '.join(["$" + str(x) for x in range(1, len(project_info) + 1)]))
             project_id = self.db.prepare(query_line)(*project_info.values())[0][0]
             self.db.prepare("insert into ta_project_list (user_id,project_id) values ($1,$2)")(user_id, project_id)
+            for x in project_info['groups']:
+                self.db.prepare("insert into group_project_list values ($1, $2)")(project_id, x)
+            self.db.prepare("insert")
             x.commit()
             return project_id
 
@@ -263,19 +268,6 @@ class DbManager:
         for record in self.db.prepare("select * from poll where project_id = $1")(project_id):
             records.append(Record({x[0]: x[1] for x in zip(self.poll, record[1:])}))
         return records
-
-    def check_credentials(self, username, password):
-        """
-        Check if this credentials are valid
-        :param username:
-        :param password:
-        :return: True if credentials are valid, false otherwise
-        """
-        h = hashlib.md5()
-        h.update(password.encode("ASCII"))
-        password = h.hexdigest()
-        return len(self.db.prepare("select * from credentials where (username, password) = ($1, $2)")
-                   (username, password)) != 0
 
     def register_user(self, registration_info):
         """

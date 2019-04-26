@@ -3,6 +3,11 @@ import postgresql
 from itertools import chain
 from postgresql.exceptions import WrongObjectTypeError
 
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+
+settings.configure()
+
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 
 clearable_tables = ["poll", "project", "team", "team_list",
@@ -13,15 +18,23 @@ tables_with_pk = dict.fromkeys(["course", "credentials", "group_by",
                                 "poll", "privilege", "topic", "project",
                                 "study_group", "team", "user"])
 
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.BCryptPasswordHasher',
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+    'django.contrib.auth.hashers.CryptPasswordHasher',
+]
+
+
 class DbManager:
     db = None
     max_project_id = None
-    id_to_privilege = {}
 
     def __init__(self):
         self.db = postgresql.open(DB_url)
-        query = self.db.query('select * from privilege')
-        self.id_to_privilege = {x[0]: x[1] for x in query}
         self.max_project_id = self.db.query("select max(project_id) from project")[0][0]
 
     def __getattr__(self, table_name):
@@ -49,8 +62,8 @@ class DbManager:
         :return: privilege name
         :raises Various DB exceptions in case of incorrect input
         """
-        student = self.db.prepare('select priv_id from "user" where user_id = $1')(user_id)[0]
-        return self.id_to_privilege[student[0]]
+        return self.db.prepare('select "name" from auth_group where id in '
+                               '(select group_id from auth_user_groups where user_id = $1)')(user_id)[0][0]
 
     def get_user_topics(self, user_id):
         """
@@ -86,7 +99,28 @@ class DbManager:
             return None
         projects = []
         for row in query:
-            projects.append(self.get_project_info(row))
+            projects.append(self.get_project_info(row[0]))
+        return projects
+
+    def get_student_projects(self, user_id):
+        """
+        Obtains projects created of given student in a list of dictionaries form
+        :param user_id: id of user to obtain projects
+        :return: list of dicts where
+            keys correspond to column names of **project** table
+            values correspond to actual values of this column
+        :raises AssertionError, if given user is not a student
+        """
+        if self.get_priority(user_id) != "student":
+            raise AssertionError("User is not a student")
+        query = self.db.prepare("select project_id from project where project_id in "
+                                "(select project_id from group_project_list where group_id in "
+                                "(select group_id from user_group_list where user_id = $1)) ")(user_id)
+        if len(query) == 0:
+            return None
+        projects = []
+        for row in query:
+            projects.append(self.get_project_info(row[0]))
         return projects
 
     def create_new_project(self, user_id, project_info):
@@ -105,14 +139,15 @@ class DbManager:
             raise AssertionError("User is not a TA")
         with self.db.xact() as x:
             x.start()
+            groups = project_info.pop('groups')
             query_line = "insert into project ({}) values ({}) returning project_id". \
                 format(', '.join(project_info.keys()),
                        ', '.join(["$" + str(x) for x in range(1, len(project_info) + 1)]))
             project_id = self.db.prepare(query_line)(*project_info.values())[0][0]
             self.db.prepare("insert into ta_project_list (user_id,project_id) values ($1,$2)")(user_id, project_id)
-            for x in project_info['groups']:
-                self.db.prepare("insert into group_project_list values ($1, $2)")(project_id, x)
-            self.db.prepare("insert")
+            for f in groups:
+                self.db.prepare('insert into group_project_list values ($1, '
+                                '(select group_id from study_group where "group" = $2))')(project_id, f)
             x.commit()
             return project_id
 
@@ -123,9 +158,9 @@ class DbManager:
         :return: True if all projects are open, false otherwise
         """
         query_line = "select * from project where project_id in " \
-                     "(select project_id from project_topic_list where topic_id in ({})) and is_open = false". \
+                     "(select project_id from project_topic_list where topic_id in ({})) and due_date < now()". \
             format(', '.join(["$" + str(x) for x in range(1, len(topics) + 1)]))
-        return len(self.db.prepare(query_line)(*topics)) == 0
+        return len(self.db.prepare(query_line)(*topics.values())) == 0
 
     def fill_poll(self, user_id, poll_info):
         """
@@ -196,17 +231,18 @@ class DbManager:
             {
                 name:name_of_user,
                 surname:surname_of_user,
-                mail:email_of_user,
+                email:email_of_user,
                 study_group: set_of_study_groups
                 course:set_of_courses
                 priv_name: privilege name
             }
             if there is no such user, returns None
         """
-        user_row = self.db.prepare('select * from "user" where user_id = $1')(user_id)[0][1:]
+        user_row = self.db.prepare('select first_name, last_name, email from auth_user where id = $1')(user_id)
         if len(user_row) == 0:
             return None
-        user_dict = {x[0]: x[1] for x in zip(self.user, user_row)}
+        user_row = user_row[0]
+        user_dict = {x[0]: x[1] for x in zip(['first_name', 'last_name', 'email'], user_row)}
         user_dict.pop("priv_id")
 
         group_row = self.db.prepare('select * from study_group where group_id in '
@@ -217,9 +253,8 @@ class DbManager:
                                      '(select course_id from course_list where user_id = $1)')(user_id)
         course_dict = {row[1:][0] for row in course_row}
 
-        priv_row = self.db.prepare('select * from privilege where priv_id in '
-                                   '(select priv_id from "user" where user_id = $1)')(user_id)[0][1:]
-        priv_dict = {x[0]: x[1] for x in zip(self.privilege, priv_row)}
+        priv_row = self.get_priority(user_id)
+        priv_dict = {'priv_name', priv_row}
 
         user_dict.update({"study_group": group_dict})
         user_dict.update({"course": course_dict})
@@ -269,7 +304,7 @@ class DbManager:
             records.append(Record({x[0]: x[1] for x in zip(self.poll, record[1:])}))
         return records
 
-    def register_user(self, registration_info):
+    def force_insert_user(self, registration_info):
         """
         Registers user with given registration data
         :param registration_info: input data in a dictionary form
@@ -287,26 +322,23 @@ class DbManager:
         :raises AttributeError if email is already in use
         :raises various DB errors if incorrect input
         """
-        if len(self.db.prepare('select * from credentials where username = $1')(registration_info['username'])) != 0:
+        if len(self.db.prepare('select * from auth_user where username = $1')(registration_info['username'])) != 0:
             raise AttributeError("Username already exists")
-        if len(self.db.prepare('select * from "user" where mail = $1')(registration_info['mail'])) != 0:
+        if len(self.db.prepare('select * from auth_user where email = $1')(registration_info['mail'])) != 0:
             raise AttributeError("Email is already in use")
 
-        registration_info['priv_id'] = self.db.prepare('select priv_id from privilege where priv_name = $1')(
-            registration_info['priv_name'])[0][0]
-        main_table_info = {k: registration_info[k] for k in set(self.user)}
-        credential_table = {k: registration_info[k] for k in set(self.credentials)}
+        level = self.db.prepare('select id from auth_group where "name" = $1')(registration_info['priv_name'])[0][0]
         group_table = registration_info["study_group"]
         with self.db.xact() as t:
             t.start()
-            user_id = self.db.prepare('insert into "user" ({}) values ($1, $2, $3, $4) returning user_id'.
-                                      format(', '.join(main_table_info.keys())))(*main_table_info.values())[0][0]
 
-            credential_table.update({'user_id': user_id})
+            registration_info['password'] = make_password(registration_info['password'])
 
-            h = hashlib.md5()
-            h.update(credential_table['password'].encode("ASCII"))
-            credential_table['password'] = h.hexdigest()
+            user_id = self.db.prepare('insert into auth_user ('
+                                      'password, email, first_name, last_name, '
+                                      'username, is_superuser, is_active, is_staff, date_joined) '
+                                      'values ($1, $2, $3, $4, $5, FALSE, TRUE, FALSE, now()) returning id') \
+                (*[registration_info[x] for x in ['password', 'mail', 'name', 'surname', 'username']])[0][0]
 
             user_group_list = []
             for x in group_table:
@@ -316,8 +348,8 @@ class DbManager:
                 record['user_id'] = user_id
                 user_group_list.append(record)
 
-            self.db.prepare('insert into credentials ({}) values  ($1, $2, $3)'.
-                            format(', '.join(credential_table.keys())))(*credential_table.values())
+            self.db.prepare('insert into auth_user_groups (user_id, group_id) values ($1, $2)')(user_id, level)
+
             for x in user_group_list:
                 self.db.prepare('insert into user_group_list ({}) values ($1, $2)'.
                                 format(', '.join(x.keys())))(*x.values())
@@ -426,8 +458,8 @@ class DbManager:
         schema = {x[0]: x[1] for x in topics_dict.items() if x[0].startswith('topic')}
         if len(schema) == 0:
             return
-        line = "select topic_name from topic where topic_id in ({})".\
-            format(', '.join(['$'+str(x) for x in range(1, len(schema) + 1)]))
+        line = "select topic_name from topic where topic_id in ({})". \
+            format(', '.join(['$' + str(x) for x in range(1, len(schema) + 1)]))
         updater = {x[0]: x[1][0] for x in zip(schema.keys(), self.db.prepare(line)(*schema.values()))}
         topics_dict.update(updater)
 

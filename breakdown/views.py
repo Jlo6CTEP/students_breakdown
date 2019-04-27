@@ -105,12 +105,22 @@ class SurveyView(generics.ListAPIView):
     def get_list_of_surveys(request, user_id=None):
         print(user_id)
         surveys = db.get_projects()
-        # surveys = db.get_student_projects()
+        # surveys = db.get_student_projects(user_id)
         print(surveys)
         serializer = SurveySerializer(surveys, many=True)
-        json_string = serializer.data
-        res = JsonResponse({"data": json_string})
-        return res
+        res = {"data": serializer.data}
+        return JsonResponse(res, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def manage_survey(request, user_id=None, survey_id=None):
+        if request.method == "GET":
+            pass
+        elif request.meth == "PUT":
+            pass
+        elif request.method == "DELETE":
+            pass
+        else:
+            return Response("Wrong method", status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @staticmethod
     def post(request):

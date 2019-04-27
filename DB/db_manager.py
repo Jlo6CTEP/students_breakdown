@@ -10,13 +10,11 @@ settings.configure()
 
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 
-clearable_tables = ["poll", "project", "team", "team_list",
-                    "user", "group_list", "credentials",
-                    "breakdown_course", "project_list", "course_list"]
+clearable_tables = ["poll", "team", "student_team_list", "course_list", "auth_user_groups"]
 
-tables_with_pk = dict.fromkeys(["course", "credentials", "group_by",
-                                "poll", "privilege", "topic", "project",
-                                "study_group", "team", "user"])
+tables_with_pk = dict.fromkeys(["breakdown_course", "group_by",
+                                "poll", "topic", "project",
+                                "study_group", "team", "auth_user"])
 
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
@@ -32,10 +30,12 @@ PASSWORD_HASHERS = [
 class DbManager:
     db = None
     max_project_id = None
+    max_lang_id = None
 
     def __init__(self):
         self.db = postgresql.open(DB_url)
         self.max_project_id = self.db.query("select max(project_id) from project")[0][0]
+        self.max_lang_id = self.db.query("select max(language_id) from language")[0][0]
 
     def __getattr__(self, table_name):
         """
@@ -183,7 +183,7 @@ class DbManager:
             self.db.prepare(query_line)(*list(chain(*[[user_id, x[1]] for x in poll_info.items()
                                                       if x[0].startswith("topic")])))
 
-            poll_id = self.db.prepare("insert into poll ({}) values ($1,$2,$3,$4,$5,$6) returning poll_id".
+            poll_id = self.db.prepare("insert into poll ({}) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning poll_id".
                                       format("user_id, " + ', '.join(poll_info.keys())))(user_id, *poll_info.values())
             if len(self.db.prepare("select * from course_list where (user_id, course_id) = ($1, $2)")
                        (user_id, poll_info['course_id'])) == 0:
@@ -261,7 +261,7 @@ class DbManager:
         user_dict.update(priv_dict)
         return user_dict
 
-    def get_student_polls(self, user_id, project_id):
+    def get_student_polls(self, user_id, project_id, de_idfy=True):
         """
         Obtains info about polls of given student in given project
         :param user_id: poll owner id
@@ -286,7 +286,8 @@ class DbManager:
             return None
         for row in query:
             d = Record({x[0]: x[1] for x in zip(self.poll, row[1:])})
-            self.de_idfy(d)
+            if de_idfy:
+                self.de_idfy(d)
             polls.append(d)
         return polls
 
@@ -435,6 +436,17 @@ class DbManager:
         d = {x[0]: x[1] for x in zip(self.project, project[1:])}
         self.de_idfy(d)
         return d
+
+    def remove_project(self, project_id):
+        """
+        removes project by it's id
+        :param project_id: project id to delete
+        :return: None
+        """
+        self.db.prepare("delete from project where project_id = $1")(project_id)
+        self.db.prepare("delete from project_topic_list where project_id = $1")(project_id)
+        self.db.prepare("delete from group_project_list where project_id = $1")(project_id)
+        self.db.prepare("delete from ta_project_list where project_id = $1")(project_id)
 
     def __de_idfy_course(self, course_dict):
         if 'course_id' not in course_dict:

@@ -22,52 +22,69 @@ from DB.db_manager import db
 from .serializers import UserSerializer, SurveySerializer
 
 
-@api_view(['POST', ])
-@authentication_classes((SessionAuthentication, BasicAuthentication))
-@permission_classes((permissions.AllowAny,))
-def login(request):
-    print(request.body)
-    body_unicode = request.body.decode('utf-8')
-    body = json.loads(body_unicode)
+class UserView:
+    class UserList(generics.ListAPIView):
+        queryset = User.objects.all()
+        serializer_class = UserSerializer
 
-    username = body['username']
-    password = body['password']
-    user = authenticate(username=username, password=password)
+    class UserDetail(generics.RetrieveAPIView):
+        queryset = User.objects.all()
+        serializer_class = UserSerializer
 
-    if user is not None:
-        if user.is_active:
-            django_login(request, user)
-            res = db.check_credentials(username, password)
-            if not res:
-                return Response("Wrong login or password", status=status.HTTP_400_BAD_REQUEST)
-            token, created = Token.objects.get_or_create(user=user)
-            res["token"] = token.key
-            print(res, token)
-            return JsonResponse(res, status=status.HTTP_200_OK)
+    class UserViewSet(viewsets.ModelViewSet):
+        queryset = User.objects.all().order_by('-date_joined')
+        serializer_class = UserSerializer
+
+    @staticmethod
+    @api_view(['POST', ])
+    @authentication_classes((SessionAuthentication, BasicAuthentication))
+    @permission_classes((permissions.AllowAny,))
+    def login(request):
+        print(request.body)
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+
+        username = body['username']
+        password = body['password']
+        user = authenticate(username=username, password=password)
+
+        if user is not None:
+            if user.is_active:
+                django_login(request, user)
+                res = db.check_credentials(username, password)
+                if not res:
+                    return Response("Wrong login or password", status=status.HTTP_400_BAD_REQUEST)
+                token, created = Token.objects.get_or_create(user=user)
+                res["token"] = token.key
+                print(res, token)
+                return JsonResponse(res, status=status.HTTP_200_OK)
+            else:
+                return Response("Inactive account", status=status.HTTP_410_GONE)
         else:
-            return Response("Inactive account", status=status.HTTP_410_GONE)
-    else:
-        return Response("Invalid login", status=status.HTTP_400_BAD_REQUEST)
+            return Response("Invalid login", status=status.HTTP_400_BAD_REQUEST)
 
+    @staticmethod
+    @api_view(['GET', ])
+    @authentication_classes((SessionAuthentication, BasicAuthentication))
+    @permission_classes((permissions.IsAuthenticated,))
+    def logout(request):
+        auth.logout(request)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', ])
-@authentication_classes((SessionAuthentication, BasicAuthentication))
-@permission_classes((permissions.IsAuthenticated,))
-def logout(request):
-    auth.logout(request)
-    # Перенаправление на страницу.
-    return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET', 'POST', ])
-@authentication_classes((SessionAuthentication, BasicAuthentication))
-@permission_classes((permissions.AllowAny,))
-def register(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+    @staticmethod
+    @api_view(['POST', ])
+    @authentication_classes((SessionAuthentication, BasicAuthentication))
+    @permission_classes((permissions.AllowAny,))
+    def register(request):
+        post = request.POST
+        form = UserCreationForm(post)
+        print(2)
         if True or form.is_valid():
+            print(3, post, request.body)
             body_unicode = request.body.decode('utf-8')
+            print(4)
             body = json.loads(body_unicode)
+            print(5)
             username = body['username']
             password = body['password']
             first_name = body['firstName']
@@ -83,43 +100,23 @@ def register(request):
             django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             res = dict(zip(["id", "username"], [user.id, user.get_username()]))
             return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
-    else:
-        form = UserCreationForm()
-        return Response("Method is not POST", status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    @staticmethod
+    @api_view(['GET', 'POST', ])
+    @authentication_classes((SessionAuthentication, BasicAuthentication))
+    @permission_classes((permissions.IsAuthenticatedOrReadOnly,))
+    def account(request):
+        return Response(status=status.HTTP_202_ACCEPTED)
 
 
-@api_view(['GET', 'POST', ])
-@authentication_classes((SessionAuthentication, BasicAuthentication))
-@permission_classes((permissions.IsAuthenticatedOrReadOnly,))
-def account(request):
-    return Response(status=status.HTTP_202_ACCEPTED)
-
-
-class UserList(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class UserDetail(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited
-    """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-
-
-class Survey(generics.ListAPIView):
+class SurveyView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
     @staticmethod
     def get_list_of_surveys(request, user_id=None):
         print(user_id)
         surveys = db.get_projects()
+        # surveys = db.get_student_projects()
         print(surveys)
         serializer = SurveySerializer(surveys, many=True)
         json_string = serializer.data
@@ -132,9 +129,10 @@ class Survey(generics.ListAPIView):
         return Response(status=status.HTTP_201_CREATED)
 
 
-class Course(APIView):
+class CourseView(APIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
 
-survey = Survey()
-course = Course()
+survey_view = SurveyView()
+course_view = CourseView()
+user_view = UserView()

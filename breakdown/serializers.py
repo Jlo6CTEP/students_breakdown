@@ -4,12 +4,9 @@ from breakdown.models import Survey, Course
 
 
 class UserSerializer(serializers.ModelSerializer):
-    surveys = serializers.PrimaryKeyRelatedField(many=True, queryset=Survey.objects.all())
-
-    """Serialization of user"""
     class Meta:
         model = User
-        fields = ("id", "username", 'first_name', 'last_name', 'surveys')
+        fields = ("id", "username", 'first_name', 'last_name')
 
 
 class CourseSerializer(serializers.ModelSerializer):

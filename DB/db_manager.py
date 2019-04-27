@@ -4,9 +4,10 @@ from itertools import chain
 from postgresql.exceptions import WrongObjectTypeError
 
 from django.conf import settings
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 
-settings.configure()
+if __name__ == "__main__":
+    settings.configure()
 
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 

@@ -72,13 +72,7 @@
                     console.log(error);
                     if (process.env.NODE_ENV !== 'production') {
                         this.surveys = [
-                            {project_name: "Group project", course: "SWP", due_date: "2019-05-18", is_formed: false},
-                            {project_name: "Assigment II", course: "AI", due_date: "2019-03-19", is_formed: false},
-                            {project_name: "Assigment I", course: "AI", due_date: "2019-03-18", is_formed: true},
-                            {project_name: "Group project", course: "SWP", due_date: "2019-05-18", is_formed: false},
-                            {project_name: "Assigment I", course: "AI", due_date: "2019-03-18", is_formed: true},
-                            {project_name: "Assigment I", course: "AI", due_date: "2019-03-18", is_formed: true},
-                            {project_name: "Assigment I", course: "AI", due_date: "2019-03-18", is_formed: true},
+                            {project_name: "ERROR", course: "ERROR", due_date: "2019-05-18", is_formed: false}
                         ];
                     } else {
                         this.errored = true;

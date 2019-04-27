@@ -21,7 +21,7 @@ surnames = open("../Data/last_name.txt").read().split(',')
 for x in range(200):
     rand_password = ''.join(random.choices(string.ascii_uppercase + string.digits, k=30))
     # insert into main database
-    sid = db.register_user({"password": rand_password, "mail": mails[x],
+    sid = db.force_insert_user({"password": rand_password, "mail": mails[x],
                             "name": names[x], "surname": random.choice(surnames),
                             "study_group": [random.choice(study_groups)[1]], "username": usernames[x],
                             "priv_name": "student"})

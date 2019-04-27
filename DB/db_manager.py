@@ -443,10 +443,11 @@ class DbManager:
         :param project_id: project id to delete
         :return: None
         """
-        self.db.prepare("delete from project where project_id = $1")(project_id)
-        self.db.prepare("delete from project_topic_list where project_id = $1")(project_id)
-        self.db.prepare("delete from group_project_list where project_id = $1")(project_id)
-        self.db.prepare("delete from ta_project_list where project_id = $1")(project_id)
+        a = self.db.prepare("delete from project where project_id = $1")(project_id)[1]
+        a += self.db.prepare("delete from project_topic_list where project_id = $1")(project_id)[1]
+        a += self.db.prepare("delete from group_project_list where project_id = $1")(project_id)[1]
+        a += self.db.prepare("delete from ta_project_list where project_id = $1")(project_id)[1]
+        return a
 
     def __de_idfy_course(self, course_dict):
         if 'course_id' not in course_dict:

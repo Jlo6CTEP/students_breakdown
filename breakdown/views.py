@@ -1,23 +1,20 @@
 import json
 
-from django.http import JsonResponse
 from django.contrib import auth
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError as DjangoIntegrityError
-
-
+from django.http import JsonResponse
 from rest_framework import viewsets, permissions, status, generics
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.authtoken.models import Token
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-
-from .models import Survey
 from DB.db_manager import db
+from .models import Survey
 from .serializers import UserSerializer, SurveySerializer
 
 
@@ -117,6 +114,7 @@ class SurveyView(generics.ListAPIView):
         return Response(status=status.HTTP_200_OK)
 
     @staticmethod
+    @api_view(['GET', 'PUT', 'DELETE', ])
     def manage_survey(request, user_id=None, survey_id=None):
         if request.method == "GET":
             return SurveyView.get_survey(request, user_id, survey_id)
@@ -145,7 +143,11 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["DELETE", ])
     def delete_survey(request, user_id, survey_id):
+        print(survey_id)
+        db.remove_project(survey_id)
         return Response(status=status.HTTP_200_OK)
+       # except:
+        #    return JsonResponse(status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def post(request):

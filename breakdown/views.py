@@ -130,7 +130,12 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["GET", ])
     def get_survey(request, user_id, survey_id):
-        return Response(status=status.HTTP_200_OK)
+        print(survey_id)
+        survey = db.get_project_info(survey_id)
+        print(survey)
+        serializer = SurveySerializer(survey, many=False)
+        res = {"data": serializer.data}
+        return JsonResponse(res, status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(["PUT", ])

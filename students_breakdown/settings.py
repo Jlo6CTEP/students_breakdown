@@ -56,7 +56,11 @@ MIDDLEWARE = [
 
 CORS_ORIGIN_WHITELIST = (
     'localhost:8080',
-    '127.0.0.1:8080'
+    '127.0.0.1:8080',
+    'localhost:8000',
+    '127.0.0.1:8000',
+    'localhost',
+    '127.0.0.1',
 )
 
 ROOT_URLCONF = 'students_breakdown.urls'

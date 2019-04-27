@@ -14,10 +14,10 @@
               <h4 class="text-white">Contact</h4>
               <ul class="list-unstyled">
                 <li>
-                  <a class="text-white" href="https://t.me/HardLight" target="_blank">Frontend-designer</a>
+                  <a class="text-white" href="http://t.me/HardLight" target="_blank">Frontend-designer</a>
                 </li>
                 <li>
-                  <a class="text-white" href="https://t.me/realnigger" target="_blank">Backend-designer</a>
+                  <a class="text-white" href="http://t.me/realnigger" target="_blank">Backend-designer</a>
                 </li>
               </ul>
             </div>

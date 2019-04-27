@@ -54,7 +54,7 @@
             }),
             test_url() {
                 axios
-                    .get(`https://127.0.0.1/users/${this.user_id}`)
+                    .get(`http://127.0.0.1:8000/users/${this.user_id}`)
                     .then(response => {
                         this.user_info = response.data
                     })

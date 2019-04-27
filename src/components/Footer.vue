@@ -5,8 +5,8 @@
         <a href="#">Back to top</a>
       </p>
       <p>Thank you for using our application</p>
-      <p>Did you find a bug? <a href="https://t.me/HardLight" target="_blank">Contact us</a> or leave this page <a
-        href="https://www.youtube.com/watch?v=ai2xqGVPpT8">immediately</a>.</p>
+      <p>Did you find a bug? <a href="http://t.me/HardLight" target="_blank">Contact us</a> or leave this page <a
+        href="://www.youtube.com/watch?v=ai2xqGVPpT8">immediately</a>.</p>
     </div>
   </footer>
 </template>

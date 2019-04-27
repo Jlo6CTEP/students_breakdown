@@ -1,6 +1,11 @@
 .DS_Store
 # Byte-compiled / optimized / DLL files
 __pycache__/
+breakdown/__pycache__/
+breakdown/__pycache__/urls.cpython-37.pyc
+
+breakdown/__pycache__/views.cpython-37.pyc
+
 *.py[cod]
 *$py.class
 

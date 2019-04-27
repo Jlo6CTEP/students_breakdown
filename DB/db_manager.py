@@ -1,4 +1,3 @@
-import hashlib
 import postgresql
 from itertools import chain
 from postgresql.exceptions import WrongObjectTypeError

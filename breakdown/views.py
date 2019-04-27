@@ -6,7 +6,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError as DjangoIntegrityError
-from django.contrib.auth.forms import UserCreationForm
 
 
 from rest_framework import viewsets, permissions, status, generics
@@ -76,30 +75,20 @@ class UserView:
     @authentication_classes((SessionAuthentication, BasicAuthentication))
     @permission_classes((permissions.AllowAny,))
     def register(request):
-        post = request.POST
-        form = UserCreationForm(post)
-        print(2)
-        if True or form.is_valid():
-            print(3, post, request.body)
-            body_unicode = request.body.decode('utf-8')
-            print(4)
-            body = json.loads(body_unicode)
-            print(5)
-            username = body['username']
-            password = body['password']
-            first_name = body['firstName']
-            last_name = body['lastName']
-            try:
-                user = User.objects.create_user(username=username,
-                                                email=username,
-                                                password=password,
-                                                first_name=first_name,
-                                                last_name=last_name)
-            except DjangoIntegrityError:
-                return Response("User already exists", status=status.HTTP_405_METHOD_NOT_ALLOWED)
-            django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            res = dict(zip(["id", "username"], [user.id, user.get_username()]))
-            return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        username = body['username']
+        password = body['password']
+        first_name = body['firstName']
+        last_name = body['lastName']
+        try:
+            user = User.objects.create_user(username=username, password=password,
+                                            email=username, first_name=first_name, last_name=last_name)
+        except DjangoIntegrityError:
+            return Response("User already exists", status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        res = dict(zip(["id", "username"], [user.id, user.get_username()]))
+        return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
 
     @staticmethod
     @api_view(['GET', 'POST', ])

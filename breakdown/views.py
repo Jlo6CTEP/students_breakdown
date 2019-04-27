@@ -119,27 +119,27 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     def manage_survey(request, user_id=None, survey_id=None):
         if request.method == "GET":
-            pass
+            return SurveyView.get_survey(request, user_id, survey_id)
         elif request.method == "PUT":
-            pass
+            return SurveyView.update_survey(request, user_id, survey_id)
         elif request.method == "DELETE":
-            pass
+            return SurveyView.delete_survey(request, user_id, survey_id)
         else:
             return Response("Wrong method", status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @staticmethod
     @api_view(["GET", ])
-    def get_survey(request):
+    def get_survey(request, user_id, survey_id):
         return Response(status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(["PUT", ])
-    def update_survey(request):
+    def update_survey(request, user_id, survey_id):
         return Response(status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(["DELETE", ])
-    def delete_survey(request):
+    def delete_survey(request, user_id, survey_id):
         return Response(status=status.HTTP_200_OK)
 
     @staticmethod

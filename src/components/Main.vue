@@ -64,7 +64,7 @@
         },
         mounted() {
             axios
-                .get(process.env.API_URL + '/user/surveys')
+                .get(process.env.API_URL + '/surveys')
                 .then(response => {
                     this.surveys = response.data.data;
                 })

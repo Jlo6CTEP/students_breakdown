@@ -18,8 +18,8 @@ class Course(models.Model):
 class Survey(models.Model):
     GROUP_BY_CHOICES = [(3, "Group"), (2, "Course"), (1, "TA")]
 
-    project_id = models.AutoField(primary_key=True)
-    project_name = models.CharField(max_length=20)
+    survey_id = models.AutoField(primary_key=True)
+    survey_name = models.CharField(max_length=20)
     is_formed = models.BooleanField(default=True)
     due_date = models.DateTimeField()
     course = models.CharField(max_length=64, null=True)
@@ -31,9 +31,9 @@ class Survey(models.Model):
     additional_info = models.CharField(max_length=512)
 
     def __str__(self):
-        return str(self.project_id) + ". " + self.project_name + " [" + str(self.course_id) + "]"
+        return str(self.survey_id) + ". " + self.survey_name + " [" + str(self.course_id) + "]"
 
     class Meta:
-        db_table = "project"
+        db_table = "survey"
         verbose_name = "Survey"
         verbose_name_plural = "Surveys"

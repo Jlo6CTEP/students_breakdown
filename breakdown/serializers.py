@@ -20,7 +20,7 @@ class SurveySerializer(serializers.ModelSerializer):
     class Meta:
         model = Survey
         fields = (
-            'project_id', 'project_name', 'due_date',
+            'survey_id', 'survey_name', 'due_date',
             'course', 'min_student', 'max_student', 'is_formed',
             'group_by', 'description', 'additional_info'
         )

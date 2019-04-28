@@ -101,12 +101,18 @@ class UserView:
 class SurveyView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
+    # TODO delete after integrating getting user
     @staticmethod
-    def get_list_of_surveys(request, user_id=None):
-        print(user_id)
-        # TODO fix this after ready front
-        # surveys = db.get_projects()
-        surveys = db.get_student_projects(user_id)
+    def get_list_of_surveys(request):
+        surveys = db.get_surveys()
+        serializer = SurveySerializer(surveys, many=True)
+        # TODO remove data layer and
+        res = {"data": serializer.data}
+        return JsonResponse(res, status=status.HTTP_200_OK)
+
+    @staticmethod
+    def get_list_of_surveys_by_user_id(request, user_id):
+        surveys = db.get_student_surveys(user_id)
         print(surveys)
         serializer = SurveySerializer(surveys, many=True)
         # TODO remove data layer and
@@ -124,7 +130,9 @@ class SurveyView(generics.ListAPIView):
         user_id = body["user_id"]
         del body["user_id"]
         try:
-            res = db.create_new_project(user_id=user_id, project_info=body)
+            survey_id = db.create_survey(user_id=user_id, survey_info=body)
+            res = {"survey_id": survey_id}
+            print(res)
             return JsonResponse(res, status=status.HTTP_200_OK)
         except AssertionError:
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -165,6 +173,11 @@ class CourseView(APIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
 
+class TeamView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated, ]
+
+
 survey_view = SurveyView()
 course_view = CourseView()
+team_view = TeamView()
 user_view = UserView()

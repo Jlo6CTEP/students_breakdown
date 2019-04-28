@@ -1,6 +1,7 @@
 from django.urls import path
 from breakdown.views import survey_view, user_view, team_view
 
+from breakdown.views import survey_view, user_view
 
 urlpatterns = [
     path('users/authenticate', user_view.login),

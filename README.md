@@ -1,5 +1,11 @@
 # Students Breakdown project
 
+### Preparation
+1. Write `pip install djangorestframework`, `pip install markdown`, `pip install django-filter` in the console
+2. Write `pip install -r requirements.txt`
+3. Write `npm install`
+4. Follow one of the instructions below
+
 ###How to run for build?
 1. Write `npm run build` in console
 2. Write `python manage.py runserver` in console

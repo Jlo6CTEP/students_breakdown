@@ -10,12 +10,12 @@ if __name__ == "__main__":
 
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 
-clearable_tables = ["poll", "project", "team", "team_list",
+clearable_tables = ["poll", "survey", "team", "team_list",
                     "user", "group_list", "credentials",
                     "breakdown_course", "project_list", "course_list"]
 
 tables_with_pk = dict.fromkeys(["course", "credentials", "group_by",
-                                "poll", "privilege", "topic", "project",
+                                "poll", "privilege", "topic", "survey",
                                 "study_group", "team", "user"])
 
 PASSWORD_HASHERS = [
@@ -35,7 +35,7 @@ class DbManager:
 
     def __init__(self):
         self.db = postgresql.open(DB_url)
-        self.max_project_id = self.db.query("select max(project_id) from project")[0][0]
+        self.max_project_id = self.db.query("select max(survey_id) from survey")[0][0]
 
     def __getattr__(self, table_name):
         """
@@ -140,13 +140,13 @@ class DbManager:
         with self.db.xact() as x:
             x.start()
             groups = project_info.pop('groups')
-            query_line = "insert into project ({}) values ({}) returning project_id". \
+            query_line = "insert into survey ({}) values ({}) returning survey_id". \
                 format(', '.join(project_info.keys()),
                        ', '.join(["$" + str(x) for x in range(1, len(project_info) + 1)]))
             project_id = self.db.prepare(query_line)(*project_info.values())[0][0]
-            self.db.prepare("insert into ta_project_list (user_id,project_id) values ($1,$2)")(user_id, project_id)
+            self.db.prepare("insert into ta_survey_list (user_id,survey_id) values ($1,$2)")(user_id, project_id)
             for f in groups:
-                self.db.prepare('insert into group_project_list values ($1, '
+                self.db.prepare('insert into group_survey_list values ($1, '
                                 '(select group_id from study_group where "group" = $2))')(project_id, f)
             x.commit()
             return project_id

@@ -104,17 +104,30 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     def get_list_of_surveys(request, user_id=None):
         print(user_id)
-        surveys = db.get_projects()
-        # surveys = db.get_student_projects(user_id)
+        # TODO fix this after ready front
+        # surveys = db.get_projects()
+        surveys = db.get_student_projects(user_id)
         print(surveys)
         serializer = SurveySerializer(surveys, many=True)
+        # TODO remove data layer and
         res = {"data": serializer.data}
         return JsonResponse(res, status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(['POST', ])
-    def create_survey(request, user_id=None):
-        return Response(status=status.HTTP_200_OK)
+    def create_survey(request):
+        print(request.body)
+
+        body_unicode = request.body.decode("utf-8")
+        print(body_unicode)
+        body = json.loads(body_unicode)
+        user_id = body["user_id"]
+        del body["user_id"]
+        try:
+            res = db.create_new_project(user_id=user_id, project_info=body)
+            return JsonResponse(res, status=status.HTTP_200_OK)
+        except AssertionError:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
     @staticmethod
     def manage_survey(request, user_id=None, survey_id=None):

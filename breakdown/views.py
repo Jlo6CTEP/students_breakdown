@@ -138,11 +138,11 @@ class SurveyView(generics.ListAPIView):
     @api_view(['GET', 'PUT', 'DELETE', ])
     def manage_survey(request, user_id=None, survey_id=None):
         if request.method == "GET":
-            return SurveyView.get_survey(request, user_id, survey_id)
+            return SurveyView.get_survey(request._request, user_id, survey_id)
         elif request.method == "PUT":
-            return SurveyView.update_survey(request, user_id, survey_id)
+            return SurveyView.update_survey(request._request, user_id, survey_id)
         elif request.method == "DELETE":
-            return SurveyView.delete_survey(request, user_id, survey_id)
+            return SurveyView.delete_survey(request._request, user_id, survey_id)
         else:
             return Response("Wrong method", status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -150,7 +150,7 @@ class SurveyView(generics.ListAPIView):
     @api_view(["GET", ])
     def get_survey(request, user_id, survey_id):
         print(survey_id)
-        survey = db.get_project_info(survey_id)
+        survey = db.get_survey_by_id(survey_id)
         print(survey)
         serializer = SurveySerializer(survey, many=False)
         res = {"data": serializer.data}
@@ -159,13 +159,19 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["PUT", ])
     def update_survey(request, user_id, survey_id):
+        body_unicode = request.body.decode("utf-8")
+        body = json.loads(body_unicode)
+        del body["user_id"]  # TODO add checking to having access
+        del body["groups"]  # TODO add changing groups
+
+        db.update_survey(survey_id=survey_id, survey_info=body)
         return Response(status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(["DELETE", ])
     def delete_survey(request, user_id, survey_id):
         print(survey_id)
-        db.remove_project(survey_id)
+        db.remove_survey(survey_id)
         return Response(status=status.HTTP_200_OK)
        # except:
         #    return JsonResponse(status=status.HTTP_400_BAD_REQUEST)
@@ -182,6 +188,47 @@ class CourseView(APIView):
 
 class TeamView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
+
+    @staticmethod
+    @api_view(["GET", ])
+    def form_teams(request, user_id, survey_id):  # TODO add method to DB_manager
+        return Response(status=status.HTTP_200_OK)
+
+    @staticmethod
+    @api_view(["GET", ])
+    def get_all_teams(request, user_id, survey_id):
+        res = db.get_all_teams(survey_id)
+        print("teams", res)
+        return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
+
+    @staticmethod
+    @api_view(["GET", "PUT", "DELETE", ])
+    def manage_team(request, user_id, survey_id, team_id):
+        if request.method == "GET":
+            return TeamView.get_team_by_id(request._request, user_id, survey_id, team_id)
+        elif request.method == "PUT":
+            return TeamView.update_team(request._request, user_id, survey_id, team_id)
+        elif request.method == "DELETE":
+            return TeamView.delete_team(request._request, user_id, survey_id, team_id)
+        else:
+            return Response("Wrong method", status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    @staticmethod
+    def get_team_by_id(request, user_id, survey_id, team_id):  # TODO: test with Yuriy
+        res = db.get_team(team_id)
+        return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
+
+    @staticmethod
+    def update_team(request, user_id, survey_id, team_id):  # TODO: test with Yuriy
+        body_unicode = request.body.decode("utf-8")
+        body = json.loads(body_unicode)
+
+        db.update_team(team_id=team_id, data=body)
+        return Response(status=status.HTTP_200_OK)
+
+    @staticmethod
+    def delete_team(request, user_id, survey_id, team_id):  # TODO: test with Yuriy
+        pass
 
 
 survey_view = SurveyView()

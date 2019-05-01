@@ -1,6 +1,9 @@
 # Students Breakdown project
 
-### Preparation
+### Links
+API and algorithm description: https://clck.ru/FqDzw
+
+### Preparation for usage
 1. Write `pip install djangorestframework`, `pip install markdown`, `pip install django-filter` in the console
 2. Write `pip install -r requirements.txt`
 3. Write `npm install`

@@ -15,9 +15,8 @@ urlpatterns = [
     path('surveys/<int:user_id>/<int:survey_id>', survey_view.manage_survey),
     path('surveys', survey_view.get_list_of_surveys),  # TODO delete if not necessary
 
-    # TODO uncomment to use team_view
-    # path('/teams/form/<int:user_id>/<int:survey_id>', team_view.form_teams),
-    # path('/teams/<int:user_id>/<int:survey_id}', team_view.get_all_teams),
-    # path('/teams/<int:user_id>/<int:survey_id>/<int:team_id>', team_view.manage_team)
+    path('teams/form/<int:user_id>/<int:survey_id>', team_view.form_teams),
+    path('teams/<int:user_id>/<int:survey_id>', team_view.get_all_teams),
+    path('teams/<int:user_id>/<int:survey_id>/<int:team_id>', team_view.manage_team)
 
 ]

@@ -51,6 +51,7 @@ class DbManager:
         r = self.db.prepare('select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = $1')(table_name)
         if table_name in tables_with_pk:
             r = r[1:]
+        print(table_name)
         if len(r) == 0:
             raise AttributeError("Incorrect attribute name")
         setattr(self, table_name, dict.fromkeys(chain(*r)))
@@ -169,6 +170,7 @@ class DbManager:
         return surveys_dict
 
     def update_survey(self, survey_id, survey_info):
+        print(survey_info)
         line = "update survey set ({}) = ({}) where survey_id = {}". \
             format(','.join(survey_info.keys()),
                    ','.join(["$" + str(x) for x in range(1, len(survey_info) + 1)]), "$" + str(len(survey_info) + 1))
@@ -291,7 +293,8 @@ class DbManager:
             return None
         user_row = user_row[0]
         user_dict = {x[0]: x[1] for x in zip(['first_name', 'last_name', 'email'], user_row)}
-        user_dict.pop("priv_id")
+        if "priv_id" in user_dict:
+            user_dict.pop("priv_id")
 
         group_row = self.db.prepare('select * from study_group where group_id in '
                                     '(select group_id from user_group_list where user_id = $1)')(user_id)

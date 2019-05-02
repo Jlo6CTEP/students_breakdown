@@ -5,9 +5,6 @@ from postgresql.exceptions import WrongObjectTypeError
 from django.conf import settings
 from django.contrib.auth.hashers import make_password, check_password
 
-if __name__ == "__main__":
-    settings.configure()
-
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 
 clearable_tables = ["poll", "team", "student_team_list", "course_list", "auth_user_groups"]
@@ -50,7 +47,6 @@ class DbManager:
         r = self.db.prepare('select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = $1')(table_name)
         if table_name in tables_with_pk:
             r = r[1:]
-        print(table_name)
         if len(r) == 0:
             raise AttributeError("Incorrect attribute name")
         setattr(self, table_name, dict.fromkeys(chain(*r)))
@@ -97,16 +93,15 @@ class DbManager:
         """
         if self.get_priority(user_id) != "ta":
             raise AssertionError("User is not a TA")
-        query = self.db.prepare("select survey_id from survey where survey_id in "
+        query = self.db.prepare("select * from survey where survey_id in "
                                 "(select survey_id from ta_survey_list where user_id = $1)")(user_id)
         if len(query) == 0:
             return None
         surveys = []
         for row in query:
-            survey_id = row[0]
-            res = self.get_survey_by_id(survey_id)
-            res["survey_id"] = survey_id
-            surveys.append(res)
+            d = {x[0]: x[1] for x in zip(self.survey, row[1:])}
+            self.de_idfy(d)
+            surveys.append(d)
         return surveys
 
     def get_student_surveys(self, user_id):
@@ -190,7 +185,6 @@ class DbManager:
         return surveys_dict
 
     def update_survey(self, survey_id, survey_info):
-        print(survey_info)
         groups = survey_info.pop('groups')
         topics = survey_info.pop('topics')
         self.db.prepare('delete from group_survey_list where "survey_id" = $1')(survey_id)
@@ -348,7 +342,7 @@ class DbManager:
         course_dict = list(row[1:][0] for row in course_row)
 
         priv_row = self.get_priority(user_id)
-        priv_dict = {'priv_name': list(priv_row)}
+        priv_dict = {'status': priv_row}
 
         user_dict.update({"study_group": group_dict})
         user_dict.update({"course": course_dict})
@@ -483,10 +477,17 @@ class DbManager:
         where each item is as described in get_user_info method
         """
         query = self.db.prepare('select user_id from student_team_list where team_id=$1')(team_id)
-        teammatews = []
+
+        team = {x[0]: x[1] for x in
+                zip(self.team, self.db.prepare('select * from team where team_id = $1')(team_id)[0])}
+        team.update({'students': []})
+        self.de_idfy(team)
+
         for x in query:
-            teammatews.append(self.get_user_info(x[0]))
-        return teammatews
+            user = self.get_user_info(x[0])
+            user.pop('course')
+            team['students'].append(user)
+        return team
 
     def get_all_teams(self, survey_id):
         """
@@ -496,14 +497,13 @@ class DbManager:
             keys correspond to column names of **team** table
             values correspond to values from this table
         """
-        teams = self.db.prepare('select * from team where topic_id in '
+        teams = self.db.prepare('select team_id from team where topic_id in '
                                 '(select topic_id from survey_topic_list where survey_id = $1)')(survey_id)
-        teams_dict = []
-        for row in teams:
-            d = {x[0]: x[1] for x in zip(self.team, row[1:])}
-            self.de_idfy(d)
-            teams_dict.append(d)
-        return teams_dict
+
+        team_list = []
+        for x in teams:
+            team_list.append(self.get_team(x[0]))
+        return team_list
 
     def update_team(self, team_id, data):
         """
@@ -568,7 +568,9 @@ class DbManager:
         survey_dict['survey'] = None if len(group) == 0 else group[0][0]
 
     def __de_idfy_topics(self, topics_dict):
-        schema = {x[0]: x[1] for x in topics_dict.items() if x[0].startswith('topic')}
+        schema = {x[0] if x[0] != 'topic_id' else 'topic': x[1]
+                  for x in topics_dict.items() if x[0].startswith('topic')}
+
         if len(schema) == 0:
             return
         line = "select topic_name from topic where topic_id in ({})". \

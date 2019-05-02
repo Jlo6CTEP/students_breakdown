@@ -110,6 +110,11 @@ class SurveyView(generics.ListAPIView):
         print(type(res["courses"]))
         return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
 
+    @staticmethod
+    def get_groups_by_course(request, course_id):
+        res = db.get_groups_by_course(course_id)
+        return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
+
     # TODO delete after integrating getting user
     @staticmethod
     @api_view(["GET", ])

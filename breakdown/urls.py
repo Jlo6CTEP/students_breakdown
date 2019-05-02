@@ -8,8 +8,9 @@ urlpatterns = [
     path('users/<int:pk>', user_view.UserDetail.as_view()),
     path('account', user_view.account),  # TODO delete if not necessary
 
-    path('surveys/course/<int:user_id>', survey_view.get_courses_by_user_id),
     path('surveys/course', survey_view.CourseList.as_view()),
+    path('surveys/course/<int:user_id>', survey_view.get_courses_by_user_id),
+    path('surveys/groups/<int:course_id>', survey_view.get_groups_by_course),
 
     path('surveys/create', survey_view.create_survey),
     path('surveys/<int:user_id>', survey_view.get_all_surveys),

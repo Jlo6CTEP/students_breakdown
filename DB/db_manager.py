@@ -520,7 +520,7 @@ class DbManager:
         self.db.prepare(line)(*data.values(), team_id)
 
     def update_team_member(self, team_id, old_user, new_user):
-        self.db.prepare("update student_team_list set user_id = $1 where team_id = $2 and user_id = $3")\
+        self.db.prepare("update student_team_list set user_id = $1 where team_id = $2 and user_id = $3") \
             (new_user, team_id, old_user)
 
     def delete_team(self, team_id):
@@ -536,6 +536,18 @@ class DbManager:
     def get_all_courses(self):
         a = self.db.query("select * from breakdown_course")
         return a
+
+    def get_groups_by_course(self, course_id):
+        a = self.db.prepare('select sg.group_id, "group" from study_group as sg inner join'
+                            '(select distinct group_id from user_group_list as ugl inner join '
+                            '(select user_id from course_list where "course_id" = $1) as qwe '
+                            'on (ugl.user_id = qwe.user_id)) as groups on (sg.group_id = groups.group_id)')(course_id)
+
+        res = list()
+        for x in a:
+            id_, name = x
+            res.append({"id": id_, "name": name})
+        return res
 
     def __de_idfy_course(self, course_dict):
         if 'course_id' not in course_dict:

@@ -4,6 +4,7 @@ const apiUrl = 'http://127.0.0.1:8000';
 
 export const surveyService = {
     getAllCourses,
+    getCoursesByUserId,
     getGroupsByCourseId: getGroupsByCourse,
     create,
     getAll,
@@ -18,7 +19,16 @@ function getAllCourses() {
         headers: {...authHeader(), 'Content-Type': 'application/json'},
     };
 
-    return fetch(`${apiUrl}/polls/course`, requestOptions).then(handleResponse);
+    return fetch(`${apiUrl}/surveys/course`, requestOptions).then(handleResponse);
+}
+
+function getCoursesByUserId(user_id) {
+    const requestOptions = {
+        method: 'GET',
+        headers: {...authHeader(), 'Content-Type': 'application/json'},
+    };
+
+    return fetch(`${apiUrl}/surveys/course/${user_id}`, requestOptions).then(handleResponse);
 }
 
 function getGroupsByCourse(course_id) {

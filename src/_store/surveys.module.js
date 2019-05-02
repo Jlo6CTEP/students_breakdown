@@ -31,6 +31,20 @@ const actions = {
                 }
             )
     },
+    getCoursesByUserId({dispatch, commit}, user_id) {
+        commit('getCoursesByUserIdRequest');
+
+        surveyService.getCoursesByUserId(user_id)
+            .then(
+                courses => {
+                    commit('getCoursesByUserIdSuccess', courses);
+                },
+                error => {
+                    commit('getCoursesByUserIdFailure', error);
+                    dispatch('alert/error', error, {root: true});
+                }
+            )
+    },
     getGroupsByCourseId({dispatch, commit}, {course_id}) {
         commit('getGroupsByCourseIdRequest');
 
@@ -116,6 +130,15 @@ const mutations = {
         state.courses = {loading: false, items: courses};
     },
     getAllCoursesFailure(state, error) {
+        state.courses = {error};
+    },
+    getCoursesByUserIdRequest(state) {
+        state.courses = {loading: true};
+    },
+    getCoursesByUserIdSuccess(state, courses) {
+        state.courses = {loading: false, items: courses};
+    },
+    getCoursesByUserIdFailure(state, error) {
         state.courses = {error};
     },
     getGroupsByCourseIdRequest(state) {

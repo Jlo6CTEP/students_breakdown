@@ -14,6 +14,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.response import Response
 
 from DB.db_manager import db
+from Alg.Algorithm import Algorithm
 from .models import Survey, Course
 from .serializers import UserSerializer, SurveySerializer, CourseSerializer
 
@@ -119,6 +120,7 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["GET", ])
     def get_list_of_surveys(request):
+        print("views: get_list_of_surveys")
         surveys = db.get_surveys()
         serializer = SurveySerializer(surveys, many=True)
         # TODO remove data layer and
@@ -128,6 +130,7 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["GET", ])
     def get_all_surveys(request, user_id):
+        print("views: get all surveys")
         if db.is_instructor(user_id):
             surveys = db.get_ta_surveys(user_id)
             print(surveys)
@@ -147,6 +150,7 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(['POST', ])
     def create_survey(request):
+        print("view: create survey")
         print(request.body)
 
         body_unicode = request.body.decode("utf-8")
@@ -222,12 +226,13 @@ class TeamView(generics.ListAPIView):
 
     @staticmethod
     @api_view(["GET", ])
-    def form_teams(request, user_id, survey_id):  # TODO add method to DB_manager
+    def form_teams(request, user_id, survey_id):  # TODO test
+        Algorithm.do_the_magic(survey_id)
         return Response(status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(["GET", ])
-    def get_all_teams(request, user_id, survey_id):
+    def get_all_teams(request, user_id, survey_id): # TODO test
         res = db.get_all_teams(survey_id)
         print("teams", res)
         return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
@@ -246,13 +251,13 @@ class TeamView(generics.ListAPIView):
 
     @staticmethod
     @api_view(["GET", ])
-    def get_team_by_id(request, user_id, survey_id, team_id):  # TODO: test with Yuriy
+    def get_team_by_id(request, user_id, survey_id, team_id):  # TODO: test
         res = db.get_team(team_id)
         return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
 
     @staticmethod
     @api_view(["PUT", ])
-    def update_team(request, user_id, survey_id, team_id):  # TODO: test with Yuriy
+    def update_team(request, user_id, survey_id, team_id):  # TODO: test
         body_unicode = request.body.decode("utf-8")
         body = json.loads(body_unicode)
 
@@ -261,8 +266,9 @@ class TeamView(generics.ListAPIView):
 
     @staticmethod
     @api_view(["DELETE", ])
-    def delete_team(request, user_id, survey_id, team_id):  # TODO: test with Yuriy
-        pass
+    def delete_team(request, user_id, survey_id, team_id):  # TODO: test
+        db.delete_team(team_id)
+        return Response(status=status.HTTP_200_OK)
 
 
 survey_view = SurveyView()

@@ -52,6 +52,7 @@ class UserView:
                     return Response("Wrong login or password", status=status.HTTP_400_BAD_REQUEST)
                 token, created = Token.objects.get_or_create(user=user)
                 res["token"] = token.key
+                res["status"] = db.get_priority(user.id)
                 print(res, token)
                 return JsonResponse(res, status=status.HTTP_200_OK)
             else:
@@ -79,8 +80,8 @@ class UserView:
         first_name = body['firstName']
         last_name = body['lastName']
         try:
-            user = User.objects.create_user(username=username, password=password,
-                                            email=username, first_name=first_name, last_name=last_name)
+            user = User.objects.create_user(username=username, password=password, email=username,
+                                            first_name=first_name, last_name=last_name)
         except DjangoIntegrityError:
             return Response("User already exists", status=status.HTTP_405_METHOD_NOT_ALLOWED)
         django_login(request, user, backend='django.contrib.auth.backends.ModelBackend')
@@ -101,6 +102,13 @@ class SurveyView(generics.ListAPIView):
     class CourseList(generics.ListAPIView):
         queryset = Course.objects.all()
         serializer_class = CourseSerializer
+
+    @staticmethod
+    def get_courses_by_user_id(request, user_id):
+        res = {"courses": db.get_user_info(user_id)["course"]}
+        print(res)
+        print(type(res["courses"]))
+        return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
 
     # TODO delete after integrating getting user
     @staticmethod

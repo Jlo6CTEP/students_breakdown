@@ -3,7 +3,7 @@ from itertools import chain
 from postgresql.exceptions import WrongObjectTypeError
 
 from django.conf import settings
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 
 if __name__ == "__main__":
     settings.configure()
@@ -239,6 +239,22 @@ class DbManager:
             format(', '.join(["$" + str(x) for x in range(1, len(topics) + 1)]))
         return len(self.db.prepare(query_line)(*topics.values())) == 0
 
+    def check_credentials(self, username, password):
+        """
+        Check if this credentials are valid
+        :param username:
+        :param password:
+        :return: False if credentials are invalid, dictionary of user data otherwise
+        """
+        pass_from_db = self.db.prepare("select * from auth_user where (username) = ($1)")(username)[0][1]
+        if not check_password(password, pass_from_db):
+            return False
+        res = self.db.prepare("select id, username, first_name, last_name "
+                              "from auth_user where username = $1")(username)[0]
+        columns = ("id", "username", "first_name", "last_name")
+        ans = {x[0]: x[1] for x in zip(columns, res)}
+        return ans
+
     def fill_poll(self, user_id, poll_info):
         """
         Fills poll of given user with given data
@@ -325,18 +341,19 @@ class DbManager:
 
         group_row = self.db.prepare('select * from study_group where group_id in '
                                     '(select group_id from user_group_list where user_id = $1)')(user_id)
-        group_dict = {row[1:][0] for row in group_row}
+        group_dict = list(row[1:][0] for row in group_row)
 
         course_row = self.db.prepare('select * from breakdown_course where course_id in '
                                      '(select course_id from course_list where user_id = $1)')(user_id)
-        course_dict = {row[1:][0] for row in course_row}
+        course_dict = list(row[1:][0] for row in course_row)
 
         priv_row = self.get_priority(user_id)
-        priv_dict = {'priv_name', priv_row}
+        priv_dict = {'priv_name': list(priv_row)}
 
         user_dict.update({"study_group": group_dict})
         user_dict.update({"course": course_dict})
         user_dict.update(priv_dict)
+        # user_dict['priv_name'] = priv_row
         return user_dict
 
     def get_student_polls(self, user_id, survey_id, de_idfy=True):

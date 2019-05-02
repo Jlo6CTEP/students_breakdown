@@ -37,7 +37,7 @@ class UserView:
     @authentication_classes((SessionAuthentication, BasicAuthentication))
     @permission_classes((permissions.AllowAny,))
     def login(request):
-        print(request.body)
+        print("view: login")
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
 
@@ -54,7 +54,6 @@ class UserView:
                 token, created = Token.objects.get_or_create(user=user)
                 res["token"] = token.key
                 res["status"] = db.get_priority(user.id)
-                print(res, token)
                 return JsonResponse(res, status=status.HTTP_200_OK)
             else:
                 return Response("Inactive account", status=status.HTTP_410_GONE)
@@ -66,6 +65,7 @@ class UserView:
     @authentication_classes((SessionAuthentication, BasicAuthentication))
     @permission_classes((permissions.IsAuthenticated,))
     def logout(request):
+        print("view: logout")
         auth.logout(request)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -74,6 +74,7 @@ class UserView:
     @authentication_classes((SessionAuthentication, BasicAuthentication))
     @permission_classes((permissions.AllowAny,))
     def register(request):
+        print("view: register")
         body_unicode = request.body.decode('utf-8')
         body = json.loads(body_unicode)
         username = body['username']
@@ -94,6 +95,7 @@ class UserView:
     @authentication_classes((SessionAuthentication, BasicAuthentication))
     @permission_classes((permissions.IsAuthenticatedOrReadOnly,))
     def account(request):
+        print("view: account")
         return Response(status=status.HTTP_202_ACCEPTED)
 
 
@@ -106,13 +108,13 @@ class SurveyView(generics.ListAPIView):
 
     @staticmethod
     def get_courses_by_user_id(request, user_id):
+        print("view: get_courses_by_user_id")
         res = {"courses": db.get_user_info(user_id)["course"]}
-        print(res)
-        print(type(res["courses"]))
         return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
 
     @staticmethod
     def get_groups_by_course(request, course_id):
+        print("view: get_groups_by_course")
         res = db.get_groups_by_course(course_id)
         return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
 
@@ -120,7 +122,7 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["GET", ])
     def get_list_of_surveys(request):
-        print("views: get_list_of_surveys")
+        print("view: get_list_of_surveys")
         surveys = db.get_surveys()
         serializer = SurveySerializer(surveys, many=True)
         # TODO remove data layer and
@@ -130,10 +132,9 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["GET", ])
     def get_all_surveys(request, user_id):
-        print("views: get all surveys")
+        print("view: get all surveys")
         if db.is_instructor(user_id):
             surveys = db.get_ta_surveys(user_id)
-            print(surveys)
             serializer = SurveySerializer(surveys, many=True)
             # TODO remove data layer and
             res = {"data": serializer.data}
@@ -141,9 +142,7 @@ class SurveyView(generics.ListAPIView):
         else:
             surveys = db.get_student_surveys(user_id)
             for x in surveys:
-                print(x)
                 polls = db.get_student_polls(user_id, x["survey_id"])[0]
-                print("polls", polls)
                 x.update(polls)
             return JsonResponse(surveys, status=status.HTTP_200_OK, safe=False)
 
@@ -151,17 +150,13 @@ class SurveyView(generics.ListAPIView):
     @api_view(['POST', ])
     def create_survey(request):
         print("view: create survey")
-        print(request.body)
-
         body_unicode = request.body.decode("utf-8")
-        print(body_unicode)
         body = json.loads(body_unicode)
         user_id = body["user_id"]
         del body["user_id"]
         try:
             survey_id = db.create_survey(user_id=user_id, survey_info=body)
             res = {"survey_id": survey_id}
-            print(res)
             return JsonResponse(res, status=status.HTTP_200_OK)
         except AssertionError:
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -169,6 +164,7 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(['GET', 'PUT', 'DELETE', ])
     def manage_survey(request, user_id=None, survey_id=None):
+        print("view: manage_survey")
         if request.method == "GET":
             return SurveyView.get_survey(request._request, user_id, survey_id)
         elif request.method == "PUT":
@@ -181,6 +177,7 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["GET", ])
     def get_survey(request, user_id, survey_id):
+        print("view: get_survey")
         if db.is_instructor(user_id):
             survey = db.get_survey_by_id(survey_id)
             serializer = SurveySerializer(survey, many=False)
@@ -189,13 +186,13 @@ class SurveyView(generics.ListAPIView):
         else:
             survey = db.get_survey_by_id(survey_id)
             poll = db.get_student_polls(user_id, survey_id)[0]
-            print(survey, poll)
             res = {**survey, **poll}
             return JsonResponse(res, status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(["PUT", ])
     def update_survey(request, user_id, survey_id):
+        print("view: update_survey")
         if db.is_instructor(user_id):
             body_unicode = request.body.decode("utf-8")
             body = json.loads(body_unicode)
@@ -206,7 +203,6 @@ class SurveyView(generics.ListAPIView):
             body_unicode = request.body.decode("utf-8")
             body = json.loads(body_unicode)
             poll_id = db.get_student_polls(user_id, survey_id)[0]
-            print(poll_id)
             poll_id = poll_id["poll_id"]
             db.modify_poll(user_id, poll_id, body)
             return Response(status=status.HTTP_200_OK)
@@ -214,9 +210,9 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["DELETE", ])
     def delete_survey(request, user_id, survey_id):
+        print("view: delete_survey")
         if not db.is_instructor(user_id):
             return Response(status=status.HTTP_403_FORBIDDEN)
-        print(survey_id)
         db.delete_survey(survey_id)
         return Response(status=status.HTTP_200_OK)
 
@@ -226,20 +222,22 @@ class TeamView(generics.ListAPIView):
 
     @staticmethod
     @api_view(["GET", ])
-    def form_teams(request, user_id, survey_id):  # TODO test
+    def form_teams(request, user_id, survey_id):
+        print("view: form_teams")
         Algorithm.do_the_magic(survey_id)
         return Response(status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(["GET", ])
-    def get_all_teams(request, user_id, survey_id): # TODO test
+    def get_all_teams(request, user_id, survey_id):
+        print("view: get_all_teams")
         res = db.get_all_teams(survey_id)
-        print("teams", res)
         return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
 
     @staticmethod
     @api_view(["GET", "PUT", "DELETE", ])
     def manage_team(request, user_id, survey_id, team_id):
+        print("view: manage_team")
         if request.method == "GET":
             return TeamView.get_team_by_id(request._request, user_id, survey_id, team_id)
         elif request.method == "PUT":
@@ -251,13 +249,15 @@ class TeamView(generics.ListAPIView):
 
     @staticmethod
     @api_view(["GET", ])
-    def get_team_by_id(request, user_id, survey_id, team_id):  # TODO: test
+    def get_team_by_id(request, user_id, survey_id, team_id):
+        print("view: get_team_by_id")
         res = db.get_team(team_id)
         return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
 
     @staticmethod
     @api_view(["PUT", ])
-    def update_team(request, user_id, survey_id, team_id):  # TODO: test
+    def update_team(request, user_id, survey_id, team_id):
+        print("view: update_team")
         body_unicode = request.body.decode("utf-8")
         body = json.loads(body_unicode)
 
@@ -266,7 +266,8 @@ class TeamView(generics.ListAPIView):
 
     @staticmethod
     @api_view(["DELETE", ])
-    def delete_team(request, user_id, survey_id, team_id):  # TODO: test
+    def delete_team(request, user_id, survey_id, team_id):
+        print("view: delete_team")
         db.delete_team(team_id)
         return Response(status=status.HTTP_200_OK)
 

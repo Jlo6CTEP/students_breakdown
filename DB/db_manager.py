@@ -1,4 +1,3 @@
-import hashlib
 import postgresql
 from itertools import chain
 from postgresql.exceptions import WrongObjectTypeError
@@ -57,6 +56,9 @@ class DbManager:
         setattr(self, table_name, dict.fromkeys(chain(*r)))
         return dict.fromkeys(chain(*r))
 
+    def is_instructor(self, user_id):
+        return self.get_priority(user_id) == "ta"
+
     def get_priority(self, user_id):
         """
         Obtains privilege of given user in textual form
@@ -101,7 +103,10 @@ class DbManager:
             return None
         surveys = []
         for row in query:
-            surveys.append(self.get_survey_by_id(row[0]))
+            survey_id = row[0]
+            res = self.get_survey_by_id(survey_id)
+            res["survey_id"] = survey_id
+            surveys.append(res)
         return surveys
 
     def get_student_surveys(self, user_id):
@@ -122,8 +127,22 @@ class DbManager:
             return None
         surveys = []
         for row in query:
-            surveys.append(self.get_survey_by_id(row[0]))
+            x = self.get_survey_by_id(row[0])
+            x["survey_id"] = row[0]
+            surveys.append(x)
         return surveys
+
+    def __add_groups_of_survey(self, survey_id, groups):
+        for f in groups:
+            self.db.prepare('insert into group_survey_list values ($1, '
+                            '(select group_id from study_group where "group" = $2))')(survey_id, f)
+
+    def __add_topics_of_survey(self, survey_id, topics):
+        for t in topics:
+            topic_id = self.db.prepare(
+                'insert into topic (topic_name) values ($1) returning topic_id')(t)[0][0]
+            self.db.prepare('insert into survey_topic_list (topic_id, survey_id) '
+                            'values ($1, $2)')(topic_id, survey_id)
 
     def create_survey(self, user_id, survey_info):
         """
@@ -142,15 +161,16 @@ class DbManager:
         with self.db.xact() as x:
             x.start()
             groups = survey_info.pop('groups')
+            topics = survey_info.pop('topics')
             query_line = "insert into survey ({}) values ({}) returning survey_id". \
                 format(', '.join(survey_info.keys()),
                        ', '.join(["$" + str(x) for x in range(1, len(survey_info) + 1)]))
             survey_id = self.db.prepare(query_line)(*survey_info.values())[0][0]
             self.db.prepare("insert into ta_survey_list (user_id,survey_id) values ($1,$2)")(user_id, survey_id)
-            for f in groups:
-                print(f)
-                self.db.prepare('insert into group_survey_list values ($1, '
-                                '(select group_id from study_group where "group" = $2))')(survey_id, f)
+
+            self.__add_groups_of_survey(survey_id, groups)
+            self.__add_topics_of_survey(survey_id, topics)
+
             x.commit()
             return survey_id
 
@@ -171,6 +191,13 @@ class DbManager:
 
     def update_survey(self, survey_id, survey_info):
         print(survey_info)
+        groups = survey_info.pop('groups')
+        topics = survey_info.pop('topics')
+        self.db.prepare('delete from group_survey_list where "survey_id" = $1')(survey_id)
+        self.db.prepare('delete from survey_topic_list where "survey_id" = $1')(survey_id)
+        self.__add_groups_of_survey(survey_id, groups)
+        self.__add_topics_of_survey(survey_id, topics)
+
         line = "update survey set ({}) = ({}) where survey_id = {}". \
             format(','.join(survey_info.keys()),
                    ','.join(["$" + str(x) for x in range(1, len(survey_info) + 1)]), "$" + str(len(survey_info) + 1))
@@ -247,7 +274,7 @@ class DbManager:
         Modifies given poll of given user
         :param user_id: user which own poll with poll_id id
         :param poll_id: poll to be modified
-        :param poll_info: poll data wich will be modified in a dictionary form, where
+        :param poll_info: poll data which will be modified in a dictionary form, where
             keys correspond to column names of **poll** table
             values correspond to values to be modified
             Values must be ID
@@ -487,6 +514,10 @@ class DbManager:
         """
         a = self.db.prepare("delete from team where team_id = $1")(team_id)[1]
         a += self.db.prepare("delete from student_team_list where team_id = $1")(team_id)[1]
+        return a
+
+    def get_all_courses(self):
+        a = self.db.query("select * from breakdown_course")
         return a
 
     def __de_idfy_course(self, course_dict):

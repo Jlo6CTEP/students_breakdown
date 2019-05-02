@@ -6,16 +6,16 @@ from django.contrib.auth import login as django_login
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError as DjangoIntegrityError
 from django.http import JsonResponse
+
 from rest_framework import viewsets, permissions, status, generics
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from DB.db_manager import db
-from .models import Survey
-from .serializers import UserSerializer, SurveySerializer
+from .models import Survey, Course
+from .serializers import UserSerializer, SurveySerializer, CourseSerializer
 
 
 class UserView:
@@ -98,8 +98,13 @@ class UserView:
 class SurveyView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, ]
 
+    class CourseList(generics.ListAPIView):
+        queryset = Course.objects.all()
+        serializer_class = CourseSerializer
+
     # TODO delete after integrating getting user
     @staticmethod
+    @api_view(["GET", ])
     def get_list_of_surveys(request):
         surveys = db.get_surveys()
         serializer = SurveySerializer(surveys, many=True)
@@ -108,13 +113,23 @@ class SurveyView(generics.ListAPIView):
         return JsonResponse(res, status=status.HTTP_200_OK)
 
     @staticmethod
-    def get_list_of_surveys_by_user_id(request, user_id):
-        surveys = db.get_student_surveys(user_id)
-        print(surveys)
-        serializer = SurveySerializer(surveys, many=True)
-        # TODO remove data layer and
-        res = {"data": serializer.data}
-        return JsonResponse(res, status=status.HTTP_200_OK)
+    @api_view(["GET", ])
+    def get_all_surveys(request, user_id):
+        if db.is_instructor(user_id):
+            surveys = db.get_ta_surveys(user_id)
+            print(surveys)
+            serializer = SurveySerializer(surveys, many=True)
+            # TODO remove data layer and
+            res = {"data": serializer.data}
+            return JsonResponse(res, status=status.HTTP_200_OK)
+        else:
+            surveys = db.get_student_surveys(user_id)
+            for x in surveys:
+                print(x)
+                polls = db.get_student_polls(user_id, x["survey_id"])[0]
+                print("polls", polls)
+                x.update(polls)
+            return JsonResponse(surveys, status=status.HTTP_200_OK, safe=False)
 
     @staticmethod
     @api_view(['POST', ])
@@ -149,41 +164,44 @@ class SurveyView(generics.ListAPIView):
     @staticmethod
     @api_view(["GET", ])
     def get_survey(request, user_id, survey_id):
-        print(survey_id)
-        survey = db.get_survey_by_id(survey_id)
-        print(survey)
-        serializer = SurveySerializer(survey, many=False)
-        res = {"data": serializer.data}
-        return JsonResponse(res, status=status.HTTP_200_OK)
+        if db.is_instructor(user_id):
+            survey = db.get_survey_by_id(survey_id)
+            serializer = SurveySerializer(survey, many=False)
+            res = {"data": {**serializer.data, **{"survey_id": survey_id}}}
+            return JsonResponse(res, status=status.HTTP_200_OK)
+        else:
+            survey = db.get_survey_by_id(survey_id)
+            poll = db.get_student_polls(user_id, survey_id)[0]
+            print(survey, poll)
+            res = {**survey, **poll}
+            return JsonResponse(res, status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(["PUT", ])
     def update_survey(request, user_id, survey_id):
-        body_unicode = request.body.decode("utf-8")
-        body = json.loads(body_unicode)
-        del body["user_id"]  # TODO add checking to having access
-        del body["groups"]  # TODO add changing groups
-
-        db.update_survey(survey_id=survey_id, survey_info=body)
-        return Response(status=status.HTTP_200_OK)
+        if db.is_instructor(user_id):
+            body_unicode = request.body.decode("utf-8")
+            body = json.loads(body_unicode)
+            del body["user_id"]  # TODO add checking to having access
+            db.update_survey(survey_id=survey_id, survey_info=body)
+            return Response(status=status.HTTP_200_OK)
+        else:
+            body_unicode = request.body.decode("utf-8")
+            body = json.loads(body_unicode)
+            poll_id = db.get_student_polls(user_id, survey_id)[0]
+            print(poll_id)
+            poll_id = poll_id["poll_id"]
+            db.modify_poll(user_id, poll_id, body)
+            return Response(status=status.HTTP_200_OK)
 
     @staticmethod
     @api_view(["DELETE", ])
     def delete_survey(request, user_id, survey_id):
+        if not db.is_instructor(user_id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
         print(survey_id)
-        db.remove_survey(survey_id)
+        db.delete_survey(survey_id)
         return Response(status=status.HTTP_200_OK)
-       # except:
-        #    return JsonResponse(status=status.HTTP_400_BAD_REQUEST)
-
-    @staticmethod
-    def post(request):
-        Survey.objects.create()
-        return Response(status=status.HTTP_201_CREATED)
-
-
-class CourseView(APIView):
-    permission_classes = [permissions.IsAuthenticated, ]
 
 
 class TeamView(generics.ListAPIView):
@@ -214,11 +232,13 @@ class TeamView(generics.ListAPIView):
             return Response("Wrong method", status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @staticmethod
+    @api_view(["GET", ])
     def get_team_by_id(request, user_id, survey_id, team_id):  # TODO: test with Yuriy
         res = db.get_team(team_id)
         return JsonResponse(res, status=status.HTTP_200_OK, safe=False)
 
     @staticmethod
+    @api_view(["PUT", ])
     def update_team(request, user_id, survey_id, team_id):  # TODO: test with Yuriy
         body_unicode = request.body.decode("utf-8")
         body = json.loads(body_unicode)
@@ -227,11 +247,11 @@ class TeamView(generics.ListAPIView):
         return Response(status=status.HTTP_200_OK)
 
     @staticmethod
+    @api_view(["DELETE", ])
     def delete_team(request, user_id, survey_id, team_id):  # TODO: test with Yuriy
         pass
 
 
 survey_view = SurveyView()
-course_view = CourseView()
 team_view = TeamView()
 user_view = UserView()

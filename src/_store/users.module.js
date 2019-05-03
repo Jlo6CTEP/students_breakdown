@@ -1,7 +1,7 @@
 import {userService} from '../_services';
 
 const state = {
-    users: {},
+    users: {items: JSON.parse(localStorage.getItem('users'))},
 };
 
 const actions = {
@@ -57,13 +57,13 @@ const actions = {
 
 const mutations = {
     getAllRequest(state) {
-        state.all = {loading: true};
+        state.users = {loading: true};
     },
     getAllSuccess(state, users) {
-        state.all = {items: users};
+        state.users = {items: users};
     },
     getAllFailure(state, error) {
-        state.all = {error};
+        state.users = {error};
     },
     getByIdRequest(state, id) {
     },
@@ -72,6 +72,7 @@ const mutations = {
     getByIdFailure(state, {error, id}) {
     },
     updateRequest(state, id) {
+        console.log("REQUEST");
         state.users.items = state.users.items.map(user =>
             user.id === id
                 ? {...user, updating: true}

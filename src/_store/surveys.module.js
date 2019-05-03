@@ -73,12 +73,12 @@ const actions = {
                 }
             );
     },
-    getAll({commit}, {user_id}) {
+    getAll({commit}, user_id) {
         commit('getAllRequest');
 
         surveyService.getAll(user_id)
             .then(
-                users => commit('getAllSuccess', users),
+                surveys => commit('getAllSuccess', surveys),
                 error => commit('getAllFailure', error)
             );
     },
@@ -139,7 +139,7 @@ const mutations = {
         state.courses = {loading: false, items: courses};
     },
     getCoursesByUserIdFailure(state, error) {
-        state.courses = {error};
+        state.courses = {errored: error};
     },
     getGroupsByCourseIdRequest(state) {
         state.groups = {loading: true};
@@ -148,7 +148,7 @@ const mutations = {
         state.groups = {loading: false, items: groups};
     },
     getGroupsByCourseIdFailure(state, error) {
-        state.groups = {error};
+        state.groups = {errored: error};
     },
     createRequest(state) {
         state.survey = {};
@@ -157,7 +157,7 @@ const mutations = {
         state.survey = survey;
     },
     createFailure(state, error) {
-        state.survey = {error};
+        state.survey = {errored: error};
     },
     getAllRequest(state) {
         state.surveys = {loading: true};
@@ -166,7 +166,7 @@ const mutations = {
         state.surveys = {loading: false, items: surveys};
     },
     getAllFailure(state, error) {
-        state.surveys = {error};
+        state.surveys = {errored: error};
     },
     getByIdRequest(state) {
         state.survey = {};

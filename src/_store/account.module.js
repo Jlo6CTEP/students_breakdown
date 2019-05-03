@@ -1,10 +1,19 @@
 import {userService} from '../_services';
+import {store} from './index';
 import {router} from '../router';
 
 const user = JSON.parse(localStorage.getItem('user'));
 const state = user
-    ? {status: {loggedIn: true}, user}
-    : {status: {}, user: null};
+    ? {auth: {loggedIn: true}, user}
+    : {auth: {}, user: null};
+
+const getters = {
+    getStatus: state => state.user ? state.user.status : 'not-auth',
+    getUrl: state => url => {
+        let status = state.user ? state.user.status : 'not-auth';
+        return `/` + status + url;
+    }
+};
 
 const actions = {
     login({dispatch, commit}, {username, password}) {
@@ -14,7 +23,7 @@ const actions = {
             .then(
                 user => {
                     commit('loginSuccess', user);
-                    router.push('/');
+                    router.push(store.getters["account/getUrl"](''));
                 },
                 error => {
                     commit('loginFailure', error);
@@ -49,35 +58,36 @@ const actions = {
 
 const mutations = {
     loginRequest(state, user) {
-        state.status = {loggingIn: true};
+        state.auth = {loggingIn: true};
         state.user = user;
     },
     loginSuccess(state, user) {
-        state.status = {loggedIn: true};
+        state.auth = {loggedIn: true};
         state.user = user;
     },
     loginFailure(state) {
-        state.status = {};
+        state.auth = {};
         state.user = null;
     },
     logout(state) {
-        state.status = {};
+        state.auth = {};
         state.user = null;
     },
     registerRequest(state, user) {
-        state.status = {registering: true};
+        state.auth = {registering: true};
     },
     registerSuccess(state, user) {
-        state.status = {};
+        state.auth = {};
     },
     registerFailure(state, error) {
-        state.status = {};
+        state.auth = {};
     }
 };
 
 export const account = {
     namespaced: true,
     state,
+    getters,
     actions,
     mutations
 };

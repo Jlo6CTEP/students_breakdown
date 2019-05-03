@@ -73,6 +73,8 @@ function update(user) {
         body: JSON.stringify(user)
     };
 
+    localStorage.setItem('user', JSON.stringify(user));
+
     return fetch(`${apiUrl}/users/${user.id}`, requestOptions).then(handleResponse);
 }
 

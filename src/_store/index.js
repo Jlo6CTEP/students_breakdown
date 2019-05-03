@@ -10,15 +10,15 @@ import {teams} from './team.module';
 Vue.use(Vuex);
 
 export const store = new Vuex.Store({
-    state: {
-        showSidebar: true,
+    /*state: {
+        showSidebar: true
     },
     getters: {
         isShowSidebar: state => state.showSidebar
     },
     mutations: {
         changeSidebar: state => state.showSidebar = !state.showSidebar
-    },
+    },*/
     modules: {
         alert,
         account,

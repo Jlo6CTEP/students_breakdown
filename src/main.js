@@ -7,8 +7,7 @@ import {router} from './router'
 import {store} from './_store'
 // setup fake backend
 // import {configureFakeBackend} from './_helpers';
-
-configureFakeBackend();
+// configureFakeBackend();
 
 
 if (process.env.NODE_ENV !== 'production') {

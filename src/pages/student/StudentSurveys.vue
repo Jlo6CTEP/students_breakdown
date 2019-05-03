@@ -50,6 +50,7 @@
 
 <script>
     import Survey from './Survey';
+    import {store} from '../../_store/index'
     import Velocity from 'velocity-animate';
     import {mapActions} from "vuex";
 
@@ -59,7 +60,7 @@
             return {
                 query: '',
                 user: state => state.account.user,
-                surveys: //store.dispatch('surveys/getAll', store.state.account.user.id),
+                surveys:// this.$store.state.surveys,
                     {
                         loading: false, errored: false, items: [
                             {
@@ -92,6 +93,7 @@
             }
         },
         mounted: {
+            load: store.dispatch('surveys/getAll', store.state.account.user.id),
             // load: () => axios
             //     .get(process.env.API_URL + '/user/surveys')
             //     .then(response => {
@@ -135,7 +137,9 @@
             computedSurveys: function () {
                 let vm = this;
                 console.log(this.surveys);
-                return this.surveys.items
+                console.log(this.surveys.surveys);
+                console.log(this.surveys.surveys.items);
+                return this.surveys.surveys.items
                     .filter(function (item) {
                         let contain_in_name = item.project_name.toLowerCase().indexOf(vm.query.toLowerCase()) !== -1;
                         let contain_in_course = item.course.toLowerCase().indexOf(vm.query.toLowerCase()) !== -1;

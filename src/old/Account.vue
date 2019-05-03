@@ -27,8 +27,8 @@
 </template>
 
 <script>
-    import {mapActions, mapState} from 'vuex'
-    import axios from "axios";
+    import {mapActions, mapState} from 'vuex/types'
+    import axios from "axios/index";
 
     export default {
         name: 'Account',

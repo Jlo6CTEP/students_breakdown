@@ -19,11 +19,11 @@ class SurveyAdmin(admin.ModelAdmin):
 class CourseAdmin(admin.ModelAdmin):
     list_display = ('course_id', 'name')
 
-
+'''
 class LanguageAdmin(admin.ModelAdmin):
     list_display = ('language_id', 'language')
     # list_display_links =
-
+'''
 
 class PollAdmin(admin.ModelAdmin):
     list_display = ('poll_id',
@@ -50,6 +50,6 @@ admin.site.register(Team, TeamAdmin)
 admin.site.register(Topic, TopicAdmin)
 admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Course, CourseAdmin)
-#admin.site.register(Language, LanguageAdmin)
+# admin.site.register(Language, LanguageAdmin)
 admin.site.register(StudyGroup, StudyGroupAdmin)
 

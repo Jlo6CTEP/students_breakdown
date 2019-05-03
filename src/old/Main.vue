@@ -49,7 +49,7 @@
 </template>
 <script>
     import Survey from './Survey';
-    import axios from "axios";
+    import axios from "axios/index";
     import Velocity from 'velocity-animate';
 
     export default {

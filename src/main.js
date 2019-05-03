@@ -2,25 +2,22 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
+import {SBD} from './student-breakdown-dashboard';
 import {router} from './router'
-import VueHead from 'vue-head'
 import {store} from './_store'
-import VeeValidate from 'vee-validate';
-import VModal from 'vue-js-modal'
 // setup fake backend
 import {configureFakeBackend} from './_helpers';
 
-if (process.env.NODE_ENV !== 'production') {
+configureFakeBackend();
 
+
+if (process.env.NODE_ENV !== 'production') {
     console.log('Looks like we are in development mode!');
+
 }
 
-Vue.use(VModal, {dynamic: true});
-Vue.use(VueHead);
-Vue.use(VeeValidate);
+Vue.use(SBD);
 Vue.config.productionTip = false;
-
-configureFakeBackend();
 
 /* eslint-disable no-new */
 new Vue({

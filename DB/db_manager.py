@@ -2,6 +2,7 @@ import postgresql
 from itertools import chain
 from postgresql.exceptions import WrongObjectTypeError
 
+from django.conf import settings
 from django.contrib.auth.hashers import make_password, check_password
 
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
@@ -26,12 +27,11 @@ PASSWORD_HASHERS = [
 class DbManager:
     db = None
     max_survey_id = None
-   # max_lang_id = None
+    max_lang_id = None
 
     def __init__(self):
         self.db = postgresql.open(DB_url)
-        self.max_survey_id = self.db.query("select max(survey_id) from survey")[0][0]
-        #  self.max_lang_id = self.db.query("select max(language_id) from language")[0][0]
+        self.max_topic_id = self.db.query("select max(topic_id) from topic")[0][0]
 
     def __getattr__(self, table_name):
         """
@@ -264,12 +264,12 @@ class DbManager:
             raise AssertionError("One of surveys is closed")
         with self.db.xact() as x:
             query_line = "insert into user_topic_list ({}) values ($1,$2),($3,$4),($5,$6)". \
-                format(', '.join(self.user_topic_list.keys()))
+                format(', '.join(list(self.user_topic_list.keys())[:len(self.user_topic_list) - 1]))
             x.start()
             self.db.prepare(query_line)(*list(chain(*[[user_id, x[1]] for x in poll_info.items()
                                                       if x[0].startswith("topic")])))
 
-            poll_id = self.db.prepare("insert into poll ({}) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning poll_id".
+            poll_id = self.db.prepare("insert into poll ({}) values ($1,$2,$3,$4,$5,$6) returning poll_id".
                                       format("user_id, " + ', '.join(poll_info.keys())))(user_id, *poll_info.values())
             if len(self.db.prepare("select * from course_list where (user_id, course_id) = ($1, $2)")
                        (user_id, poll_info['course_id'])) == 0:
@@ -441,6 +441,10 @@ class DbManager:
             self.db.prepare('insert into auth_user_groups (user_id, group_id) values ($1, $2)')(user_id, level)
 
             for x in user_group_list:
+                try:
+                    x.pop('id')
+                except KeyError:
+                    pass
                 self.db.prepare('insert into user_group_list ({}) values ($1, $2)'.
                                 format(', '.join(x.keys())))(*x.values())
             t.commit()

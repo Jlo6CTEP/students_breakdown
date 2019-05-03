@@ -5,6 +5,9 @@ from DB.db_manager import db
 from datetime import datetime
 
 dt = datetime.now()
+a = Algorithm(15)
+a.do_the_magic()
+print()
 """Db manager"""
 #b.create_new_project(36, {'project_name': 'test', 'course_id': 3,
 #                          'min_student': 3, 'max_student': 5, 'group_by': 5,
@@ -22,7 +25,6 @@ dt = datetime.now()
 a = 22
 
 #db.fill_poll(a, {"topic1": 1, "topic2": 3, "topic3": 2, "course_id": 3, "project_id": 15})
-print(db.get_student_projects(a))
 #print(db.get_student_polls(a, 15))
 #print(db.get_project_teams(15))
 #print(db.get_projects())

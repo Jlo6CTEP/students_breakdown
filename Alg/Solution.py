@@ -30,7 +30,7 @@ class Solution(list):
 
     def add_team(self, team):
         self.__fitness_var = None
-        for x in team:
+        for x in team.team:
             self.student_ptr.update({x.user_id: x})
             self.team_ptr.update({x.user_id: team})
         self.append(team)

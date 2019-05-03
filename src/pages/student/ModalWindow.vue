@@ -74,8 +74,16 @@
 </template>
 
 <script>
+    import {mapActions} from "vuex";
+
     export default {
         name: "ModalWindow",
+        computed: {
+            ...mapActions({
+                getSurveyById: 'surveys/getById',
+                getTeamById: 'teams/getById'
+            }),
+        },
         props: {
             course: {
                 type: String,

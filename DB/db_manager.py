@@ -1,12 +1,9 @@
-import hashlib
 import postgresql
 from itertools import chain
 from postgresql.exceptions import WrongObjectTypeError
 
 from django.conf import settings
-from django.contrib.auth.hashers import make_password
-
-settings.configure()
+from django.contrib.auth.hashers import make_password, check_password
 
 DB_url = "pq://zpgkwdlt:M4Ef1T1p8VmvYamieL-JR3ZK4J0hztBy@dumbo.db.elephantsql.com:5432/zpgkwdlt"
 
@@ -34,8 +31,7 @@ class DbManager:
 
     def __init__(self):
         self.db = postgresql.open(DB_url)
-        self.max_survey_id = self.db.query("select max(survey_id) from survey")[0][0]
-        self.max_lang_id = self.db.query("select max(language_id) from language")[0][0]
+        self.max_topic_id = self.db.query("select max(topic_id) from topic")[0][0]
 
     def __getattr__(self, table_name):
         """
@@ -54,6 +50,9 @@ class DbManager:
             raise AttributeError("Incorrect attribute name")
         setattr(self, table_name, dict.fromkeys(chain(*r)))
         return dict.fromkeys(chain(*r))
+
+    def is_instructor(self, user_id):
+        return self.get_priority(user_id) == "ta"
 
     def get_priority(self, user_id):
         """
@@ -93,13 +92,15 @@ class DbManager:
         """
         if self.get_priority(user_id) != "ta":
             raise AssertionError("User is not a TA")
-        query = self.db.prepare("select survey_id from survey where survey_id in "
+        query = self.db.prepare("select * from survey where survey_id in "
                                 "(select survey_id from ta_survey_list where user_id = $1)")(user_id)
         if len(query) == 0:
             return None
         surveys = []
         for row in query:
-            surveys.append(self.get_survey_by_id(row[0]))
+            d = {x[0]: x[1] for x in zip(self.survey, row[1:])}
+            self.de_idfy(d)
+            surveys.append(d)
         return surveys
 
     def get_student_surveys(self, user_id):
@@ -120,8 +121,22 @@ class DbManager:
             return None
         surveys = []
         for row in query:
-            surveys.append(self.get_survey_by_id(row[0]))
+            x = self.get_survey_by_id(row[0])
+            x["survey_id"] = row[0]
+            surveys.append(x)
         return surveys
+
+    def __add_groups_of_survey(self, survey_id, groups):
+        for f in groups:
+            self.db.prepare('insert into group_survey_list values ($1, '
+                            '(select group_id from study_group where "group" = $2))')(survey_id, f)
+
+    def __add_topics_of_survey(self, survey_id, topics):
+        for t in topics:
+            topic_id = self.db.prepare(
+                'insert into topic (topic_name) values ($1) returning topic_id')(t)[0][0]
+            self.db.prepare('insert into survey_topic_list (topic_id, survey_id) '
+                            'values ($1, $2)')(topic_id, survey_id)
 
     def create_survey(self, user_id, survey_info):
         """
@@ -140,14 +155,16 @@ class DbManager:
         with self.db.xact() as x:
             x.start()
             groups = survey_info.pop('groups')
+            topics = survey_info.pop('topics')
             query_line = "insert into survey ({}) values ({}) returning survey_id". \
                 format(', '.join(survey_info.keys()),
                        ', '.join(["$" + str(x) for x in range(1, len(survey_info) + 1)]))
             survey_id = self.db.prepare(query_line)(*survey_info.values())[0][0]
             self.db.prepare("insert into ta_survey_list (user_id,survey_id) values ($1,$2)")(user_id, survey_id)
-            for f in groups:
-                self.db.prepare('insert into group_survey_list values ($1, '
-                                '(select group_id from study_group where "group" = $2))')(survey_id, f)
+
+            self.__add_groups_of_survey(survey_id, groups)
+            self.__add_topics_of_survey(survey_id, topics)
+
             x.commit()
             return survey_id
 
@@ -167,6 +184,13 @@ class DbManager:
         return surveys_dict
 
     def update_survey(self, survey_id, survey_info):
+        groups = survey_info.pop('groups')
+        topics = survey_info.pop('topics')
+        self.db.prepare('delete from group_survey_list where "survey_id" = $1')(survey_id)
+        self.db.prepare('delete from survey_topic_list where "survey_id" = $1')(survey_id)
+        self.__add_groups_of_survey(survey_id, groups)
+        self.__add_topics_of_survey(survey_id, topics)
+
         line = "update survey set ({}) = ({}) where survey_id = {}". \
             format(','.join(survey_info.keys()),
                    ','.join(["$" + str(x) for x in range(1, len(survey_info) + 1)]), "$" + str(len(survey_info) + 1))
@@ -208,6 +232,22 @@ class DbManager:
             format(', '.join(["$" + str(x) for x in range(1, len(topics) + 1)]))
         return len(self.db.prepare(query_line)(*topics.values())) == 0
 
+    def check_credentials(self, username, password):
+        """
+        Check if this credentials are valid
+        :param username:
+        :param password:
+        :return: False if credentials are invalid, dictionary of user data otherwise
+        """
+        pass_from_db = self.db.prepare("select * from auth_user where (username) = ($1)")(username)[0][1]
+        if not check_password(password, pass_from_db):
+            return False
+        res = self.db.prepare("select id, username, first_name, last_name "
+                              "from auth_user where username = $1")(username)[0]
+        columns = ("id", "username", "first_name", "last_name")
+        ans = {x[0]: x[1] for x in zip(columns, res)}
+        return ans
+
     def fill_poll(self, user_id, poll_info):
         """
         Fills poll of given user with given data
@@ -224,12 +264,12 @@ class DbManager:
             raise AssertionError("One of surveys is closed")
         with self.db.xact() as x:
             query_line = "insert into user_topic_list ({}) values ($1,$2),($3,$4),($5,$6)". \
-                format(', '.join(self.user_topic_list.keys()))
+                format(', '.join(list(self.user_topic_list.keys())[:len(self.user_topic_list) - 1]))
             x.start()
             self.db.prepare(query_line)(*list(chain(*[[user_id, x[1]] for x in poll_info.items()
                                                       if x[0].startswith("topic")])))
 
-            poll_id = self.db.prepare("insert into poll ({}) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning poll_id".
+            poll_id = self.db.prepare("insert into poll ({}) values ($1,$2,$3,$4,$5,$6) returning poll_id".
                                       format("user_id, " + ', '.join(poll_info.keys())))(user_id, *poll_info.values())
             if len(self.db.prepare("select * from course_list where (user_id, course_id) = ($1, $2)")
                        (user_id, poll_info['course_id'])) == 0:
@@ -243,7 +283,7 @@ class DbManager:
         Modifies given poll of given user
         :param user_id: user which own poll with poll_id id
         :param poll_id: poll to be modified
-        :param poll_info: poll data wich will be modified in a dictionary form, where
+        :param poll_info: poll data which will be modified in a dictionary form, where
             keys correspond to column names of **poll** table
             values correspond to values to be modified
             Values must be ID
@@ -289,22 +329,24 @@ class DbManager:
             return None
         user_row = user_row[0]
         user_dict = {x[0]: x[1] for x in zip(['first_name', 'last_name', 'email'], user_row)}
-        user_dict.pop("priv_id")
+        if "priv_id" in user_dict:
+            user_dict.pop("priv_id")
 
         group_row = self.db.prepare('select * from study_group where group_id in '
                                     '(select group_id from user_group_list where user_id = $1)')(user_id)
-        group_dict = {row[1:][0] for row in group_row}
+        group_dict = list(row[1:][0] for row in group_row)
 
         course_row = self.db.prepare('select * from breakdown_course where course_id in '
                                      '(select course_id from course_list where user_id = $1)')(user_id)
-        course_dict = {row[1:][0] for row in course_row}
+        course_dict = list(row[1:][0] for row in course_row)
 
         priv_row = self.get_priority(user_id)
-        priv_dict = {'priv_name', priv_row}
+        priv_dict = {'status': priv_row}
 
         user_dict.update({"study_group": group_dict})
         user_dict.update({"course": course_dict})
         user_dict.update(priv_dict)
+        # user_dict['priv_name'] = priv_row
         return user_dict
 
     def get_student_polls(self, user_id, survey_id, de_idfy=True):
@@ -357,11 +399,11 @@ class DbManager:
         Registers user with given registration data
         :param registration_info: input data in a dictionary form
         {
-            password: user_password, 
+            password: user_password,
             mail: user_mail,
-            name: user_name, 
+            name: user_name,
             surname: user_surname,
-            study_group: [user_study_group] list, 
+            study_group: [user_study_group] list,
             username: user_nickname,
             priv_name: user_privilege
         }
@@ -399,6 +441,10 @@ class DbManager:
             self.db.prepare('insert into auth_user_groups (user_id, group_id) values ($1, $2)')(user_id, level)
 
             for x in user_group_list:
+                try:
+                    x.pop('id')
+                except KeyError:
+                    pass
                 self.db.prepare('insert into user_group_list ({}) values ($1, $2)'.
                                 format(', '.join(x.keys())))(*x.values())
             t.commit()
@@ -434,10 +480,17 @@ class DbManager:
         where each item is as described in get_user_info method
         """
         query = self.db.prepare('select user_id from student_team_list where team_id=$1')(team_id)
-        teammatews = []
+
+        team = {x[0]: x[1] for x in
+                zip(self.team, self.db.prepare('select * from team where team_id = $1')(team_id)[0])}
+        team.update({'students': []})
+        self.de_idfy(team)
+
         for x in query:
-            teammatews.append(self.get_user_info(x[0]))
-        return teammatews
+            user = self.get_user_info(x[0])
+            user.pop('course')
+            team['students'].append(user)
+        return team
 
     def get_all_teams(self, survey_id):
         """
@@ -447,14 +500,13 @@ class DbManager:
             keys correspond to column names of **team** table
             values correspond to values from this table
         """
-        teams = self.db.prepare('select * from team where topic_id in '
+        teams = self.db.prepare('select team_id from team where topic_id in '
                                 '(select topic_id from survey_topic_list where survey_id = $1)')(survey_id)
-        teams_dict = []
-        for row in teams:
-            d = {x[0]: x[1] for x in zip(self.team, row[1:])}
-            self.de_idfy(d)
-            teams_dict.append(d)
-        return teams_dict
+
+        team_list = []
+        for x in teams:
+            team_list.append(self.get_team(x[0]))
+        return team_list
 
     def update_team(self, team_id, data):
         """
@@ -471,7 +523,7 @@ class DbManager:
         self.db.prepare(line)(*data.values(), team_id)
 
     def update_team_member(self, team_id, old_user, new_user):
-        self.db.prepare("update student_team_list set user_id = $1 where team_id = $2 and user_id = $3")\
+        self.db.prepare("update student_team_list set user_id = $1 where team_id = $2 and user_id = $3") \
             (new_user, team_id, old_user)
 
     def delete_team(self, team_id):
@@ -483,6 +535,22 @@ class DbManager:
         a = self.db.prepare("delete from team where team_id = $1")(team_id)[1]
         a += self.db.prepare("delete from student_team_list where team_id = $1")(team_id)[1]
         return a
+
+    def get_all_courses(self):
+        a = self.db.query("select * from breakdown_course")
+        return a
+
+    def get_groups_by_course(self, course_id):
+        a = self.db.prepare('select sg.group_id, "group" from study_group as sg inner join'
+                            '(select distinct group_id from user_group_list as ugl inner join '
+                            '(select user_id from course_list where "course_id" = $1) as qwe '
+                            'on (ugl.user_id = qwe.user_id)) as groups on (sg.group_id = groups.group_id)')(course_id)
+
+        res = list()
+        for x in a:
+            id_, name = x
+            res.append({"id": id_, "name": name})
+        return res
 
     def __de_idfy_course(self, course_dict):
         if 'course_id' not in course_dict:
@@ -503,7 +571,9 @@ class DbManager:
         survey_dict['survey'] = None if len(group) == 0 else group[0][0]
 
     def __de_idfy_topics(self, topics_dict):
-        schema = {x[0]: x[1] for x in topics_dict.items() if x[0].startswith('topic')}
+        schema = {x[0] if x[0] != 'topic_id' else 'topic': x[1]
+                  for x in topics_dict.items() if x[0].startswith('topic')}
+
         if len(schema) == 0:
             return
         line = "select topic_name from topic where topic_id in ({})". \

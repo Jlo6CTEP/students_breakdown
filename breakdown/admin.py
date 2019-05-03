@@ -31,9 +31,7 @@ class LanguageAdmin(admin.ModelAdmin):
 class PollAdmin(admin.ModelAdmin):
     list_display = ('poll_id',
                     'topic1', 'topic2', 'topic3',
-                    'user_id', 'course_id', 'survey_id',
-                    #  'language1', 'language2', 'language3',
-                    'group_by',)
+                    'user_id', 'course_id', 'survey_id',)
 
 
 class StudyGroupAdmin(admin.ModelAdmin):
@@ -64,19 +62,19 @@ class GroupSurveyListAdmin(admin.ModelAdmin):
 
 
 class StudentTeamListAdmin(admin.ModelAdmin):
-    list_display_links = ('user_id', 'team_id', 'id')
+    list_display = ('user_id', 'team_id', 'id')
 
 
 class SurveyTopicListAdmin(admin.ModelAdmin):
-    list_display_links = ('topic_id', 'survey_id', 'id')
+    list_display = ('topic_id', 'survey_id', 'id')
 
 
 class UserGroupListAdmin(admin.ModelAdmin):
-    list_display_links = ('group_id', 'user_id', 'id')
+    list_display = ('group_id', 'user_id', 'id')
 
 
 class UserTopicListAdmin(admin.ModelAdmin):
-    list_display_links = ('topic_id', 'user_id', 'id')
+    list_display = ('topic_id', 'user_id', 'id')
 
 
 admin.site.register(Poll, PollAdmin)

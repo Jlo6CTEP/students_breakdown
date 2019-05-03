@@ -58,10 +58,6 @@ class Poll(models.Model):
     user_id = models.IntegerField()
     course_id = models.IntegerField()
     survey_id = models.IntegerField()
-    #  language1 = models.IntegerField()
-    # language2 = models.IntegerField()
-    # language3 = models.IntegerField()
-    group_by = models.IntegerField()
 
     class Meta:
         db_table = "poll"
@@ -137,7 +133,8 @@ class GroupSurveyList(models.Model):
 class StudentTeamList(models.Model):
     user_id = models.IntegerField()
     team_id = models.IntegerField()
-    id = models.IntegerField(primary_key=True)
+
+    # id = models.IntegerField(primary_key=True)
 
     class Meta:
         db_table = "student_team_list"

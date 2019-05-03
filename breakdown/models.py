@@ -39,14 +39,14 @@ class Survey(models.Model):
         verbose_name_plural = "Surveys"
 
 
-class Language(models.Model):
+'''class Language(models.Model):
     language_id = models.AutoField(primary_key=True)
     language = models.CharField(max_length=128)
 
     class Meta:
         db_table = "language"
         verbose_name = "Language"
-        verbose_name_plural = "Languages"
+        verbose_name_plural = "Languages"'''
 
 
 class Poll(models.Model):

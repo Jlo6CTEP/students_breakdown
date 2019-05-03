@@ -31,7 +31,7 @@ class DbManager:
     def __init__(self):
         self.db = postgresql.open(DB_url)
         self.max_survey_id = self.db.query("select max(survey_id) from survey")[0][0]
-        self.max_lang_id = self.db.query("select max(language_id) from language")[0][0]
+        # self.max_lang_id = self.db.query("select max(language_id) from language")[0][0]
 
     def __getattr__(self, table_name):
         """

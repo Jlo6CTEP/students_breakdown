@@ -13,40 +13,76 @@
             <p class="card-text">Course: {{course}}</p>
             <p class="card-text ">Description: {{description}}</p>
             <div class="row choose-project" v-if="!is_formed">
-                <div class="form-group col-md-4">
-                    <label for="inputState1">Project 1</label>
-                    <select class="form-control" id="inputState1">
-                        <option disabled selected>Choose...</option>
-                        <option>Timetable creation</option>
-                        <option>Students breakdown</option>
-                        <option>Renting System</option>
-                        <option>Startup</option>
-                        <option>Leave the university</option>
-                    </select>
-                </div>
-                <div class="form-group col-md-4">
-                    <label for="inputState2">Project 2</label>
-                    <select class="form-control" id="inputState2">
-                        <option disabled selected>Choose...</option>
-                        <option>Timetable creation</option>
-                        <option>Students breakdown</option>
-                        <option>Renting System</option>
-                        <option>Startup</option>
-                        <option>Leave the university</option>
-                    </select>
-                </div>
-                <div class="form-group col-md-4">
-                    <label for="inputState3">Project 3</label>
-                    <select class="form-control" id="inputState3">
-                        <option disabled selected>Choose...</option>
-                        <option>Timetable creation</option>
-                        <option>Students breakdown</option>
-                        <option>Renting System</option>
-                        <option>Startup</option>
-                        <option>Leave the university</option>
-                    </select>
-                </div>
-
+                <template v-if="is_closed">
+                    <div class="form-group col-md-4">
+                        <label for="inputState1">Project 1</label>
+                        <select class="form-control" disabled id="inputState1">
+                            <option disabled>Choose...</option>
+                            <option>Timetable creation</option>
+                            <option selected>Students breakdown</option>
+                            <option>Renting System</option>
+                            <option>Startup</option>
+                            <option>Leave the university</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="inputState2">Project 2</label>
+                        <select class="form-control" disabled id="inputState2">
+                            <option disabled selected>Choose...</option>
+                            <option selected>Timetable creation</option>
+                            <option>Students breakdown</option>
+                            <option>Renting System</option>
+                            <option>Startup</option>
+                            <option>Leave the university</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="inputState3">Project 3</label>
+                        <select class="form-control" disabled id="inputState3">
+                            <option disabled>Choose...</option>
+                            <option>Timetable creation</option>
+                            <option>Students breakdown</option>
+                            <option>Renting System</option>
+                            <option selected>Startup</option>
+                            <option>Leave the university</option>
+                        </select>
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="form-group col-md-4">
+                        <label for="inputState4">Project 1</label>
+                        <select class="form-control" id="inputState4">
+                            <option disabled selected>Choose...</option>
+                            <option>Timetable creation</option>
+                            <option>Students breakdown</option>
+                            <option>Renting System</option>
+                            <option>Startup</option>
+                            <option>Leave the university</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="inputState5">Project 2</label>
+                        <select class="form-control" id="inputState5">
+                            <option disabled selected>Choose...</option>
+                            <option>Timetable creation</option>
+                            <option>Students breakdown</option>
+                            <option>Renting System</option>
+                            <option>Startup</option>
+                            <option>Leave the university</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="inputState6">Project 3</label>
+                        <select class="form-control" id="inputState6">
+                            <option disabled selected>Choose...</option>
+                            <option>Timetable creation</option>
+                            <option>Students breakdown</option>
+                            <option>Renting System</option>
+                            <option>Startup</option>
+                            <option>Leave the university</option>
+                        </select>
+                    </div>
+                </template>
             </div>
             <div class="col-lg-9" v-else>
                 <div class="team">

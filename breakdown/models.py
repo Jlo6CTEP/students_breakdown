@@ -39,6 +39,7 @@ class Survey(models.Model):
         verbose_name_plural = "Surveys"
 
 
+'''
 class Language(models.Model):
     language_id = models.AutoField(primary_key=True)
     language = models.CharField(max_length=128)
@@ -46,7 +47,7 @@ class Language(models.Model):
     class Meta:
         db_table = "language"
         verbose_name = "Language"
-        verbose_name_plural = "Languages"
+        verbose_name_plural = "Languages"'''''
 
 
 class Poll(models.Model):
@@ -57,9 +58,9 @@ class Poll(models.Model):
     user_id = models.IntegerField()
     course_id = models.IntegerField()
     survey_id = models.IntegerField()
-    language1 = models.IntegerField()
-    language2 = models.IntegerField()
-    language3 = models.IntegerField()
+    #  language1 = models.IntegerField()
+    # language2 = models.IntegerField()
+    # language3 = models.IntegerField()
     group_by = models.IntegerField()
 
     class Meta:
@@ -99,3 +100,90 @@ class Team(models.Model):
         db_table = "team"
         verbose_name = "Team"
         verbose_name_plural = "Teams"
+
+
+class CourseList(models.Model):
+    user_id = models.IntegerField()
+    course_id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
+
+    class Meta:
+        db_table = "course_list"
+        verbose_name = "Course list"
+        verbose_name_plural = "Course lists"
+
+
+class GroupBy(models.Model):
+    grouping_id = models.IntegerField(primary_key=True)
+    group_by = models.CharField(max_length=20)
+
+    class Meta:
+        db_table = "group_by"
+        verbose_name = "Group by"
+        verbose_name_plural = "Group by"
+
+
+class GroupSurveyList(models.Model):
+    survey_id = models.IntegerField()
+    group_id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
+
+    class Meta:
+        db_table = "group_survey_list"
+        verbose_name = "Group survey list"
+        verbose_name_plural = "Group survey lists"
+
+
+class StudentTeamList(models.Model):
+    user_id = models.IntegerField()
+    team_id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
+
+    class Meta:
+        db_table = "student_team_list"
+        verbose_name = "Student team list"
+        verbose_name_plural = "Student team lists"
+
+
+class SurveyTopicList(models.Model):
+    topic_id = models.IntegerField()
+    survey_id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
+
+    class Meta:
+        db_table = "survey_topic_list"
+        verbose_name = "Survey topic list"
+        verbose_name_plural = "Survey topic lists"
+
+
+class TaSurveyList(models.Model):
+    user_id = models.IntegerField()
+    survey_id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
+
+    class Meta:
+        db_table = "ta_survey_list"
+        verbose_name = "TA survey list"
+        verbose_name_plural = "TA Survey lists"
+
+
+class UserGroupList(models.Model):
+    user_id = models.IntegerField()
+    group_id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
+
+    class Meta:
+        db_table = "user_group_list"
+        verbose_name = "User group list"
+        verbose_name_plural = "User group lists"
+
+
+class UserTopicList(models.Model):
+    user_id = models.IntegerField()
+    topic_id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
+
+    class Meta:
+        db_table = "user_topic_list"
+        verbose_name = "User topic list"
+        verbose_name_plural = "User topic lists"

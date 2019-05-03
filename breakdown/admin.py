@@ -29,7 +29,7 @@ class PollAdmin(admin.ModelAdmin):
     list_display = ('poll_id',
                     'topic1', 'topic2', 'topic3',
                     'user_id', 'course_id', 'survey_id',
-                    'language1', 'language2', 'language3',
+                  #  'language1', 'language2', 'language3',
                     'group_by',)
 
 
@@ -50,6 +50,6 @@ admin.site.register(Team, TeamAdmin)
 admin.site.register(Topic, TopicAdmin)
 admin.site.register(Survey, SurveyAdmin)
 admin.site.register(Course, CourseAdmin)
-admin.site.register(Language, LanguageAdmin)
+#admin.site.register(Language, LanguageAdmin)
 admin.site.register(StudyGroup, StudyGroupAdmin)
 

@@ -36,7 +36,6 @@
                                         v-bind:due_date="survey.due_date"
                                         v-bind:id="survey.id"
                                         v-bind:is_formed="survey.is_formed"
-                                        v-bind:project_id="survey.id"
                                         v-bind:project_name="survey.project_name"/>
                                 </div>
                             </transition-group>

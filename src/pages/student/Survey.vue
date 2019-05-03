@@ -51,9 +51,6 @@
                 required:
                     true
             },
-            project_id: {
-                type: Number,
-            },
             project_name: {
                 type: String,
                 required:
@@ -97,14 +94,12 @@
             show() {
                 this.$modal.show(ModalWindow, {
                     text: 'This text is passed as a property',
-                    project_id: this.project_id,
                     project_name: this.project_name,
                     course: this.course,
                     description: this.description,
                     due_date_format: this.due_date_format,
                     is_formed: this.is_formed,
-                    is_closed: this.is_closed(this.due_date),
-                    chosen_projects: this.chosen_projects,
+                    is_closed: this.is_closed(this.due_date)
                 }, {
                     height: 'auto',
                     scrollable: true,

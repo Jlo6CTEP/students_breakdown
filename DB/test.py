@@ -6,8 +6,7 @@ from datetime import datetime
 
 dt = datetime.now()
 a = Algorithm(15)
-a.do_the_magic()
-print()
+print(a.do_the_magic())
 """Db manager"""
 #b.create_new_project(36, {'project_name': 'test', 'course_id': 3,
 #                          'min_student': 3, 'max_student': 5, 'group_by': 5,
